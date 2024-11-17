@@ -119,8 +119,15 @@ MainFrame::MainFrame(const wxString& title) : wxFrame(nullptr, wxID_ANY, title) 
 
 	auto updateButton = new wxButton(notePanel, wxID_ANY, "Update", wxDefaultPosition, wxSize(-1, 25));
 	auto colorSelectSizer = new wxBoxSizer(wxHORIZONTAL);
-	auto colorPanelTitle = new wxStaticText(colorPanel, wxID_ANY, "Color palete", wxDefaultPosition, wxDefaultSize, wxBOLD);
+	font.SetWeight(wxFONTWEIGHT_NORMAL);
+	font.SetStyle(wxFONTSTYLE_NORMAL);
+	font.SetUnderlined(false);
+	font.MakeBold();
+	font.SetPointSize(9.5);
+	auto colorPanelTitle = new wxStaticText(colorPanel, wxID_ANY, "Color palette");
+	colorPanelTitle->SetFont(font);
 
+	colorPanelSizer->AddSpacer(3);
 	colorPanelSizer->Add(colorPanelTitle, 0, wxALL, 4);
 	colorPanelSizer->AddSpacer(3);
 	colorPanelSizer->Add(colorSelectSizer, 0, wxEXPAND | wxLEFT | wxRIGHT, 5);
@@ -140,9 +147,16 @@ MainFrame::MainFrame(const wxString& title) : wxFrame(nullptr, wxID_ANY, title) 
 	colorChoiceSizer->Add(fColorChoice, 0, wxALIGN_RIGHT );
 	colorChoiceSizer->Add(bColorChoice, 0, wxALIGN_RIGHT );
 	colorChoiceSizer->AddSpacer(5);
+	
+	auto notePanelTitle = new wxStaticText(notePanel, wxID_ANY, "Note options");
+	notePanelTitle->SetFont(font);
+
+	notePanelSizer->AddSpacer(6);
+	notePanelSizer->Add(notePanelTitle, 0, wxALL, 4);
+	notePanelSizer->AddSpacer(4);
+	notePanelSizer->Add(noteEnterText, 1, wxEXPAND | wxALL, 2);
 	notePanelSizer->Add(stylingSizer, 0, wxEXPAND | wxRIGHT | wxLEFT | wxUP, 2);
 	notePanelSizer->Add(updateButton, 0, wxEXPAND | wxRIGHT | wxLEFT | wxDOWN, 2);
-	notePanelSizer->Add(noteEnterText, 1, wxEXPAND| wxALL, 2);
 
 
 
@@ -165,6 +179,10 @@ MainFrame::MainFrame(const wxString& title) : wxFrame(nullptr, wxID_ANY, title) 
 	}
 
 	CreateStatusBar();
+}
+
+void MainFrame::declareObjects(wxWindow* parent) {
+
 }
 
 void MainFrame::OnNoteButtonClicked(wxCommandEvent& evt) {
@@ -201,19 +219,16 @@ void MainFrame::OnColorHover(wxMouseEvent& evt) {
 	}
 	evt.Skip();
 }
-
 void MainFrame::OnBoldSelect(wxCommandEvent& evt)
 {
 	isBold = !isBold;
 	wxLogStatus(wxString::Format("set bold state to %d", isBold));
 }
-
 void MainFrame::OnItalicSelect(wxCommandEvent& evt)
 {
 	isItalic = !isItalic;
 	wxLogStatus(wxString::Format("set italic state to %d", isItalic));
 }
-
 void MainFrame::OnUnderlinedSelect(wxCommandEvent& evt)
 {
 	isUnderlined = !isUnderlined;
