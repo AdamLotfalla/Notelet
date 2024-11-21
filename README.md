@@ -9,5 +9,5 @@ The app currently offers only stickynotes with all of their functionalities but 
 - On the left panel, you have the add note options on the bottom. First enter your note text in the text box, choose your formatting: **bold**, **italic**, or **Underlined**, then click **add** or **Ctrl + N** to create new.
 - If you want to modify the note, click on the desired note, select your modificaitons, enter the new text, and then click *update*.
 - You can drag any note on the work area
-- To put a note on the top, first select the note and then click *Home* key on the keyboard
-- To put a note on the bottom, first select the note and then click *End* key on the keyboard
+- To put a note on the top, first select the note and then click **Home** key on the keyboard
+- To put a note on the bottom, first select the note and then click **End** key on the keyboard
