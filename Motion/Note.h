@@ -1,8 +1,8 @@
 #pragma once
 #include <wx/wx.h>
 #include <string>
-#include "MainFrame.h"
 
+class MainFrame;
 
 class Note : public wxPanel {
 public:
@@ -13,13 +13,29 @@ public:
     wxGridSizer* sizer;
     wxStaticText* textContent;
     bool mHover;
+    bool mHold;
     bool isActive;
+    bool mDrag;
+    bool painted = false;
+    int borderWidth;
+    wxPoint dragStartPos; // Mouse position when dragging starts
+    wxPoint noteStartPos; // Initial position of the Note
+    wxPoint offset;
+    wxFont font;
+    wxWindow* active;
+    MainFrame* mainFrame = nullptr;
 
 
     // Constructor declaration only
-    Note(int WIDTH, int HEIGHT, int ROTATION, int X_POS, int Y_POS, wxString TEXT, wxFont FONT, wxColor FCOLOR, wxColor BCOLOR, wxWindow* PARENT);
+    Note(int WIDTH, int HEIGHT, int ROTATION, int X_POS, int Y_POS, wxString TEXT, wxFont FONT, wxColor FCOLOR, wxColor BCOLOR, wxWindow* PARENT, MainFrame* frame);
+
+    void UpdateNote(int newWidth, int newHeight, wxString newText, wxFont newFont, wxColor newFcolor, wxColor newBcolor);
 
     void makeActive(wxMouseEvent& evt);
     void onMouseEnter(wxMouseEvent& evt);
     void onMouseLeave(wxMouseEvent& evt);
+    void NotePaintBorder(wxPaintEvent& evt);
+    void OnLeftMouseDown(wxMouseEvent& evt);
+    void OnMouseMove(wxMouseEvent& evt);
+    void OnLeftMouseUp(wxMouseEvent& evt);
 };

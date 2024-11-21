@@ -20,13 +20,11 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="App.h" />
-    <ClInclude Include="CustomButton.h" />
     <ClInclude Include="MainFrame.h" />
     <ClInclude Include="Note.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="App.cpp" />
-    <ClCompile Include="CustomButton.cpp" />
     <ClCompile Include="MainFrame.cpp" />
     <ClCompile Include="Note.cpp" />
   </ItemGroup>
