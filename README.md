@@ -1,6 +1,6 @@
 # Notelet - the nonlinear-notetaking app
 
-Notelet is a notetaking app built upon stickynotes. it is my first experience in windows app development using wxWidgets.
+Notelet is a notetaking app built upon stickynotes. it is my first experience in windows app development using wxWidgets in C++.
 
 The app currently offers only stickynotes with all of their functionalities but I aim to add other features like to-do lists and images 
 
