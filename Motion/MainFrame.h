@@ -5,6 +5,7 @@
 #include <wx/splitter.h>
 #include <wx/tglbtn.h>
 #include <wx/wrapsizer.h>
+#include "ImagePanel.h"
 
 
 
@@ -55,6 +56,9 @@ public:
 
 	wxWrapSizer* colorWraper;
 
+	std::vector<Note* > notes;
+	//std::vector<ImagePanel*> imagePanels;
+
 
 
 	std::vector<std::string> colorPalette = {
@@ -97,12 +101,16 @@ public:
 private:
 	wxTextCtrl* noteEnterText;
 	wxPanel* panel;
+	wxString currentFilePath; // To store the current file path
+
 	
 	// Methods
 	void declareVariables();
 	void declareObjects(wxWindow* parent);
 	void addSizers();
 	void configureObjects();
+	void SaveNotesToFile(const wxString& filePath);
+	void LoadNotesFromFile(const wxString& filePath);
 
 
 	// Events
@@ -116,5 +124,11 @@ private:
 	void PaintColorBorder(wxPaintEvent& evt);
 	void CreateNoteShortcut(wxKeyEvent& evt);
 	void OnDelete(wxKeyEvent& evt);
+	void OnFileSave(wxCommandEvent& evt);
+	void OnFileSaveAs(wxCommandEvent& evt);
+	void OnFileOpen(wxCommandEvent& evt);
+	void OnFileExit(wxCommandEvent& evt);
+	void OnAddImage(wxCommandEvent& evt);
+
 };
 
