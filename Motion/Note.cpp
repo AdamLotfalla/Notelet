@@ -1,6 +1,7 @@
 #include "Note.h"
 #include <wx/wx.h>
 #include "MainFrame.h"
+#include <wx/dcbuffer.h>
 
 Note::Note(int WIDTH, int HEIGHT, int ROTATION, int X_POS, int Y_POS, wxString TEXT, wxFont FONT, wxColor FCOLOR, wxColor BCOLOR, wxWindow* PARENT, MainFrame* frame) : wxPanel(PARENT, wxID_ANY, wxPoint(X_POS, Y_POS), wxSize(WIDTH, HEIGHT))
 {
@@ -43,6 +44,8 @@ Note::Note(int WIDTH, int HEIGHT, int ROTATION, int X_POS, int Y_POS, wxString T
 
     this->SetDoubleBuffered(true);
     this->GetParent()->SetDoubleBuffered(true);
+    stickynote->SetDoubleBuffered(true);
+    textContent->SetDoubleBuffered(true);
     Refresh();
 
     //auto temsizer = new wxBoxSizer(wxVERTICAL);
@@ -101,7 +104,6 @@ void Note::NotePaintBorder(wxPaintEvent& evt) {
     //transparentBrush.SetStyle(wxBRUSHSTYLE_TRANSPARENT);
     //dc.SetBrush(wxBrush(bcolor));
     
-    // Draw the outline around the entire Note panel
     wxRect rect = GetClientRect();
     //dc.DrawRectangle(0, 0, width, height);
     dc.DrawLine(wxPoint(0, 0), wxPoint(0, height));

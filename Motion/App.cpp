@@ -5,7 +5,7 @@
 wxIMPLEMENT_APP(App);
 
 bool App::OnInit() {
-	MainFrame* mainFrame = new MainFrame("Motion");
+	MainFrame* mainFrame = new MainFrame("Notelet");
 	mainFrame->SetClientSize(1000, 600);
 	mainFrame->Center();
 	mainFrame->Show();

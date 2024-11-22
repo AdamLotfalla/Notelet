@@ -7,7 +7,13 @@
 #include <wx/wrapsizer.h>
 #include <wx/splitter.h>
 #include <wx/tglbtn.h>
-#include "PanPanel.h"
+#include <wx/menu.h>
+#include <wx/filedlg.h>
+#include <wx/xml/xml.h>
+#include <wx/image.h>
+#include <wx/bitmap.h>
+
+
 
 MainFrame::MainFrame(const wxString& title) : wxFrame(nullptr, wxID_ANY, title) {
 
@@ -22,8 +28,17 @@ MainFrame::MainFrame(const wxString& title) : wxFrame(nullptr, wxID_ANY, title) 
 	italicButton->Bind(wxEVT_TOGGLEBUTTON, &MainFrame::OnItalicSelect, this);
 	underlineButton->Bind(wxEVT_TOGGLEBUTTON, &MainFrame::OnUnderlinedSelect, this);
 	updateButton->Bind(wxEVT_BUTTON, &MainFrame::OnUpdateButtonClicked, this);
-	sidePanel->Bind(wxEVT_CHAR_HOOK, &MainFrame::CreateNoteShortcut, this);
-	panel->Bind(wxEVT_CHAR_HOOK, &MainFrame::OnDelete, this);
+	this->Bind(wxEVT_CHAR_HOOK, &MainFrame::CreateNoteShortcut, this);
+
+	Bind(wxEVT_MENU, &MainFrame::OnFileSave, this, wxID_SAVE);
+	Bind(wxEVT_MENU, &MainFrame::OnFileSaveAs, this, wxID_SAVEAS);
+	Bind(wxEVT_MENU, &MainFrame::OnFileOpen, this, wxID_OPEN);
+	Bind(wxEVT_MENU, &MainFrame::OnFileExit, this, wxID_EXIT);
+	Bind(wxEVT_MENU, &MainFrame::OnNoteButtonClicked, this, wxID_NEW);
+	Bind(wxEVT_MENU, &MainFrame::OnAddImage, this, wxID_ADD);
+
+
+	//panel->Bind(wxEVT_CHAR_HOOK, &MainFrame::OnDelete, this);
 
 	this->SetDoubleBuffered(true);
 }
@@ -86,6 +101,26 @@ void MainFrame::declareObjects(wxWindow* parent) {
 
 	// --- Titles ---
 	notePanelTitle = new wxStaticText(notePanel, wxID_ANY, "Note options");
+
+	// Menu Bar
+	wxMenuBar* menuBar = new wxMenuBar();
+	wxMenu* fileMenu = new wxMenu();
+	wxMenu* addMenu = new wxMenu();
+
+	fileMenu->Append(wxID_SAVE, "&Save\tCtrl-S", "Save the notes");
+	fileMenu->Append(wxID_SAVEAS, "Save &As...", "Save the notes to a specific file");
+	fileMenu->Append(wxID_OPEN, "&Open\tCtrl-O", "Open a file to load notes");
+	fileMenu->AppendSeparator();
+	fileMenu->Append(wxID_EXIT, "E&xit", "Exit the application");
+
+	addMenu->Append(wxID_NEW, "&Add Note\tCtrl-N", "Add a new note");
+	//addMenu->Append(wxID_ADD, "&Add Image\tCtrl-I", "Add an image to the panel");
+
+	menuBar->Append(fileMenu, "&File");
+	menuBar->Append(addMenu, "&Add");
+
+	SetMenuBar(menuBar);
+
 
 	// --- Status Bar ---
 	CreateStatusBar();
@@ -158,6 +193,88 @@ void MainFrame::configureObjects() {
 	notePanelTitle->SetFont(font);
 }
 
+void MainFrame::SaveNotesToFile(const wxString& filePath) {
+	wxXmlDocument xmlDoc;
+	wxXmlNode* root = new wxXmlNode(wxXML_ELEMENT_NODE, "Notes");
+	xmlDoc.SetRoot(root);
+
+	for (const auto& note : notes) {
+		wxXmlNode* noteNode = new wxXmlNode(wxXML_ELEMENT_NODE, "Note");
+		noteNode->AddAttribute("x", wxString::Format("%d", note->GetPosition().x));
+		noteNode->AddAttribute("y", wxString::Format("%d", note->GetPosition().y));
+		noteNode->AddAttribute("foreground", note->fcolor.GetAsString());
+		noteNode->AddAttribute("background", note->bcolor.GetAsString());
+		noteNode->AddAttribute("fontSize", wxString::Format("%d", note->font.GetPointSize()));
+		noteNode->AddAttribute("bold", note->font.GetWeight() == wxFONTWEIGHT_BOLD ? "1" : "0");
+		noteNode->AddAttribute("italic", note->font.GetStyle() == wxFONTSTYLE_ITALIC ? "1" : "0");
+		noteNode->AddAttribute("underline", note->font.GetUnderlined() ? "1" : "0");
+
+		wxXmlNode* textNode = new wxXmlNode(wxXML_TEXT_NODE, "", note->text);
+		noteNode->AddChild(textNode);
+		root->AddChild(noteNode);
+	}
+
+	if (!xmlDoc.Save(filePath)) {
+		wxLogError("Unable to save the file!");
+	}
+	else {
+		wxLogStatus("File saved successfully!");
+	}
+}
+void MainFrame::LoadNotesFromFile(const wxString& filePath) {
+	wxXmlDocument xmlDoc;
+	if (!xmlDoc.Load(filePath)) {
+		wxLogError("Unable to load the file!");
+		return;
+	}
+
+	wxXmlNode* root = xmlDoc.GetRoot();
+	if (root->GetName() != "Notes") {
+		wxLogError("Invalid file format!");
+		return;
+	}
+
+	// Clear existing notes
+	for (auto note : notes) {
+		note->Destroy();
+	}
+	notes.clear();
+
+	wxXmlNode* child = root->GetChildren();
+	while (child) {
+		if (child->GetName() == "Note") {
+			int x = wxAtoi(child->GetAttribute("x", "0"));
+			int y = wxAtoi(child->GetAttribute("y", "0"));
+			wxColour foreground(child->GetAttribute("foreground", "black"));
+			wxColour background(child->GetAttribute("background", "white"));
+
+			wxFont font;
+			font.SetPointSize(wxAtoi(child->GetAttribute("fontSize", "12")));
+			font.SetWeight(child->GetAttribute("bold", "0") == "1" ? wxFONTWEIGHT_BOLD : wxFONTWEIGHT_NORMAL);
+			font.SetStyle(child->GetAttribute("italic", "0") == "1" ? wxFONTSTYLE_ITALIC : wxFONTSTYLE_NORMAL);
+			font.SetUnderlined(child->GetAttribute("underline", "0") == "1");
+
+			wxString text = child->GetNodeContent();
+
+			Note* note = new Note(150, 150, 0, x, y, text, font, foreground, background, panel, this);
+			notes.push_back(note);
+		}
+		child = child->GetNext();
+	}
+
+	wxLogStatus("File loaded successfully!");
+}
+void MainFrame::SetActive(Note* activeNote) {
+	if (activeNote == nullptr) {
+		wxLogStatus("Attempting to set active note to nullptr.");
+		return;
+	}
+	active = activeNote;
+	noteEnterText->SetLabel(active->text);
+	noteEnterText->SelectAll();
+	wxLogStatus("Active ID: %i", active->GetId());
+}
+
 
 // Events
 void MainFrame::OnNoteButtonClicked(wxCommandEvent& evt) {
@@ -170,6 +287,7 @@ void MainFrame::OnNoteButtonClicked(wxCommandEvent& evt) {
 	if (isUnderlined) { font.MakeUnderlined(); }
 
 	Note* note = new Note(150, 150, 0, noteDefaultPosX, noteDefaultPosY, message, font, NoteFColor, NoteBColor, panel, this);
+	notes.push_back(note);
 	wxLogStatus(wxString::Format("note created at (%d,%d)", note->GetPosition().x, note->GetPosition().y));
 	noteEnterText->SelectAll();
 	if (noteDefaultPosX + note->GetSize().x + 50 < this->GetSize().GetWidth() && noteDefaultPosY + note->GetSize().y + 50 < this->GetSize().GetHeight()) {
@@ -181,7 +299,6 @@ void MainFrame::OnNoteButtonClicked(wxCommandEvent& evt) {
 		noteDefaultPosY = 0;
 	}
 	evt.Skip();
-	//Notes.push_back(note);
 }
 void MainFrame::OnUpdateButtonClicked(wxCommandEvent& evt)
 {
@@ -253,6 +370,7 @@ void MainFrame::CreateNoteShortcut(wxKeyEvent& evt)
 		if (isUnderlined) { font.MakeUnderlined(); }
 
 		Note* note = new Note(150, 150, 0, noteDefaultPosX, noteDefaultPosY, message, font, NoteFColor, NoteBColor, panel, this);
+		notes.push_back(note);
 		wxLogStatus(wxString::Format("note created at (%d,%d)", note->GetPosition().x, note->GetPosition().y));
 		noteEnterText->SelectAll();
 		if (noteDefaultPosX + note->GetSize().x + 50 < this->GetSize().GetWidth() && noteDefaultPosY + note->GetSize().y + 50 < this->GetSize().GetHeight()) {
@@ -263,15 +381,18 @@ void MainFrame::CreateNoteShortcut(wxKeyEvent& evt)
 			noteDefaultPosX = 0;
 			noteDefaultPosY = 0;
 		}
+
+		evt.Skip(false);
+		return;
 	}
-	if (evt.GetKeyCode() == WXK_DELETE) {
+	else if (evt.GetKeyCode() == WXK_DELETE) {
 		active->Destroy();
 		active = nullptr;
 	}
-	if (evt.GetKeyCode() == WXK_HOME) {
+	else if (evt.GetKeyCode() == WXK_HOME) {
 		active->Raise();
 	}
-	if (evt.GetKeyCode() == WXK_END) {
+	else if (evt.GetKeyCode() == WXK_END) {
 		active->Lower();
 	}
 
@@ -287,11 +408,85 @@ void MainFrame::OnDelete(wxKeyEvent& evt)
 		wxLogStatus("No active note to delete.");
 	}
 }
-void MainFrame::SetActive(Note* activeNote) {
-	if (activeNote == nullptr) {
-		wxLogStatus("Attempting to set active note to nullptr.");
-		return;
+void MainFrame::OnFileSave(wxCommandEvent& evt) {
+	if (currentFilePath.IsEmpty()) {
+		OnFileSaveAs(evt);
 	}
-	active = activeNote;
-	wxLogStatus("Active ID: %i", active->GetId());
+	else {
+		SaveNotesToFile(currentFilePath);
+	}
+}
+void MainFrame::OnFileSaveAs(wxCommandEvent& evt) {
+	wxFileDialog saveFileDialog(this, "Save Notes", "", "",
+		"XML files (*.xml)|*.xml",
+		wxFD_SAVE | wxFD_OVERWRITE_PROMPT);
+
+	if (saveFileDialog.ShowModal() == wxID_CANCEL)
+		return;
+
+	currentFilePath = saveFileDialog.GetPath();
+
+	// Ensure file path has .xml extension
+	if (!currentFilePath.Lower().EndsWith(".xml")) {
+		currentFilePath += ".xml";
+	}
+
+	SaveNotesToFile(currentFilePath);
+}
+void MainFrame::OnFileOpen(wxCommandEvent& evt) {
+	wxFileDialog openFileDialog(
+		this, _("Open Notes File"), "", "",
+		"XML files (*.xml)|*.xml|All Files (*.*)|*.*",
+		wxFD_OPEN | wxFD_FILE_MUST_EXIST);
+
+	if (openFileDialog.ShowModal() == wxID_CANCEL) {
+		wxLogStatus("File open canceled.");
+		return; // User canceled, so exit the function.
+	}
+
+	wxString filePath = openFileDialog.GetPath();
+	wxLogStatus("Opening file: %s", filePath);
+
+	LoadNotesFromFile(filePath);
+}
+void MainFrame::OnFileExit(wxCommandEvent& evt) {
+	Close(true);
+}
+void MainFrame::OnAddImage(wxCommandEvent& event) {
+
+
+	wxImage image;
+	image.LoadFile("cat.png", wxBITMAP_TYPE_PNG);
+	//if (!image.LoadFile("C:/Users/EGYTEK/OneDrive/Desktop/cat.png")) {
+	//	// Handle error, e.g., log an error message
+	//	wxLogError("Failed to load image file.");
+	//}
+
+	wxBitmap bitmap = wxBitmap(image);
+	wxStaticBitmap* staticBitmap = new wxStaticBitmap(panel, wxID_ANY, bitmap);
+
+
+	//// Create a file dialog for image selection
+	//wxFileDialog openFileDialog(this, _("Open Image file"), "", "",
+	//	"Image files (*.png;*.jpg)|*.png;*.jpg", wxFD_OPEN | wxFD_FILE_MUST_EXIST);
+
+	//// If the user selects a file and presses OK
+	//if (openFileDialog.ShowModal() == wxID_OK) {
+	//	wxString fileName = openFileDialog.GetPath();
+
+	//	// Try loading the image
+	//	wxImage image(fileName, wxBITMAP_TYPE_ANY); // Alternatively, use wxBITMAP_TYPE_PNG or 
+	//	if (image.IsOk()) {
+	//		// Image loaded successfully, you can display or process it
+
+	//		// For example, display the image in a static bitmap control (assuming you have a wxStaticBitmap)
+	//		// myStaticBitmapControl->SetBitmap(bitmap);
+
+	//		wxBitmap bitmap(image);
+	//		auto imagepanel = new ImagePanel(panel);
+	//	}
+	//	else {
+	//		wxLogError("Failed to load the image: %s", fileName);
+	//	}
+	//}
 }
