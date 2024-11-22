@@ -6,6 +6,7 @@
 #include <wx/tglbtn.h>
 #include <wx/wrapsizer.h>
 #include "ImagePanel.h"
+#include <deque>
 
 
 
@@ -56,7 +57,7 @@ public:
 
 	wxWrapSizer* colorWraper;
 
-	std::vector<Note* > notes;
+	std::deque<Note* > notes;
 	//std::vector<ImagePanel*> imagePanels;
 
 

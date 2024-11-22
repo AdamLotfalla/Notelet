@@ -12,6 +12,7 @@
 #include <wx/xml/xml.h>
 #include <wx/image.h>
 #include <wx/bitmap.h>
+#include <deque>
 
 
 
@@ -386,6 +387,8 @@ void MainFrame::CreateNoteShortcut(wxKeyEvent& evt)
 		return;
 	}
 	else if (evt.GetKeyCode() == WXK_DELETE) {
+		auto it = std::find(notes.begin(), notes.end(), active);
+		notes.erase(it);
 		active->Destroy();
 		active = nullptr;
 	}
