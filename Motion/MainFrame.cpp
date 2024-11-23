@@ -13,6 +13,7 @@
 #include <wx/image.h>
 #include <wx/bitmap.h>
 #include <deque>
+#include <wx/icon.h>
 
 
 
@@ -42,6 +43,8 @@ MainFrame::MainFrame(const wxString& title) : wxFrame(nullptr, wxID_ANY, title) 
 	//panel->Bind(wxEVT_CHAR_HOOK, &MainFrame::OnDelete, this);
 
 	this->SetDoubleBuffered(true);
+/*	wxIcon appIcon("./Icon.ico", wxBITMAP_TYPE_ICO);
+	SetIcon(appIcon)*/;
 }
 
 void MainFrame::declareVariables() {
@@ -290,6 +293,7 @@ void MainFrame::OnNoteButtonClicked(wxCommandEvent& evt) {
 	Note* note = new Note(150, 150, 0, noteDefaultPosX, noteDefaultPosY, message, font, NoteFColor, NoteBColor, panel, this);
 	notes.push_back(note);
 	wxLogStatus(wxString::Format("note created at (%d,%d)", note->GetPosition().x, note->GetPosition().y));
+	active = note;
 	noteEnterText->SelectAll();
 	if (noteDefaultPosX + note->GetSize().x + 50 < this->GetSize().GetWidth() && noteDefaultPosY + note->GetSize().y + 50 < this->GetSize().GetHeight()) {
 		noteDefaultPosX += 25;
@@ -303,15 +307,17 @@ void MainFrame::OnNoteButtonClicked(wxCommandEvent& evt) {
 }
 void MainFrame::OnUpdateButtonClicked(wxCommandEvent& evt)
 {
-	auto message = noteEnterText->GetValue();
-	font.SetWeight(wxFONTWEIGHT_NORMAL);
-	font.SetStyle(wxFONTSTYLE_NORMAL);
-	font.SetUnderlined(false);
-	if (isBold) { font.MakeBold(); }
-	if (isItalic) { font.MakeItalic(); }
-	if (isUnderlined) { font.MakeUnderlined(); }
+	if (active != nullptr) {
+		auto message = noteEnterText->GetValue();
+		font.SetWeight(wxFONTWEIGHT_NORMAL);
+		font.SetStyle(wxFONTSTYLE_NORMAL);
+		font.SetUnderlined(false);
+		if (isBold) { font.MakeBold(); }
+		if (isItalic) { font.MakeItalic(); }
+		if (isUnderlined) { font.MakeUnderlined(); }
 
-	active->UpdateNote(150, 150, message, font, NoteFColor, NoteBColor);
+		active->UpdateNote(150, 150, message, font, NoteFColor, NoteBColor);
+	}
 }
 void MainFrame::OnColorChoose(wxMouseEvent& evt) {
 	if (F_BColorCheck->GetSelection() == 1) { NoteBColor = NoteColorBuffer; wxLogStatus("BColor is chosen"); bColorChoice->SetBackgroundColour(NoteColorBuffer); }
@@ -374,6 +380,7 @@ void MainFrame::CreateNoteShortcut(wxKeyEvent& evt)
 		notes.push_back(note);
 		wxLogStatus(wxString::Format("note created at (%d,%d)", note->GetPosition().x, note->GetPosition().y));
 		noteEnterText->SelectAll();
+		active = note;
 		if (noteDefaultPosX + note->GetSize().x + 50 < this->GetSize().GetWidth() && noteDefaultPosY + note->GetSize().y + 50 < this->GetSize().GetHeight()) {
 			noteDefaultPosX += 25;
 			noteDefaultPosY += 25;

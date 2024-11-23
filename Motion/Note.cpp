@@ -83,16 +83,6 @@ void Note::onMouseLeave(wxMouseEvent& evt) {
     wxLogStatus("Exited");
 }
 
-void Note::makeActive(wxMouseEvent& evt) {
-    if (mHover) {
-        //MainFrame::activePtr = this;
-        //wxLogMessage("note active");
-        //wxLogStatus("Activated");
-        wxLogStatus(wxString::Format("Width: %d, Height: %d | actual W: %d, actual H, %d", width, height, stickynote->GetSize().GetWidth(), stickynote->GetSize().GetHeight()));
-    }
-    else { wxLogStatus("not hover!?"); }
-}
-
 void Note::NotePaintBorder(wxPaintEvent& evt) {
     wxPaintDC dc(this);
     
@@ -116,8 +106,10 @@ void Note::NotePaintBorder(wxPaintEvent& evt) {
 }
 
 void Note::OnLeftMouseDown(wxMouseEvent& evt) {
-    if (mHover) { mHold = true; }
+    if (mHover && !mHold) { mHold = true; }
     offset = wxGetMousePosition() - this->GetPosition();
+    mainFrame->SetActive(this);
+
     textContent->Unbind(wxEVT_LEFT_DOWN, &Note::OnLeftMouseDown, this);
     textContent->Unbind(wxEVT_ENTER_WINDOW, &Note::onMouseEnter, this);
     textContent->Unbind(wxEVT_LEAVE_WINDOW, &Note::onMouseLeave, this);
@@ -136,6 +128,4 @@ void Note::OnLeftMouseUp(wxMouseEvent& evt) {
     textContent->Bind(wxEVT_ENTER_WINDOW, &Note::onMouseEnter, this);
     textContent->Bind(wxEVT_LEAVE_WINDOW, &Note::onMouseLeave, this);
     textContent->Bind(wxEVT_LEFT_DOWN, &Note::OnLeftMouseDown, this);
-    mainFrame->SetActive(this);
-    //wxLogStatus("active changed to %i", active->GetId());
 }

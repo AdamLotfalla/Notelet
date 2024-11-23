@@ -1,6 +1,7 @@
 #include "App.h"
 #include "MainFrame.h"
 #include <wx/wx.h>
+#include <wx/icon.h>
 
 wxIMPLEMENT_APP(App);
 

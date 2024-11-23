@@ -23,12 +23,16 @@
     <ClInclude Include="ImagePanel.h" />
     <ClInclude Include="MainFrame.h" />
     <ClInclude Include="Note.h" />
+    <ClInclude Include="resource.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="App.cpp" />
     <ClCompile Include="ImagePanel.cpp" />
     <ClCompile Include="MainFrame.cpp" />
     <ClCompile Include="Note.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="Icon.ico" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>17.0</VCProjectVersion>

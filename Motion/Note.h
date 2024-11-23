@@ -17,12 +17,13 @@ public:
     bool isActive;
     bool mDrag;
     bool painted = false;
+    bool disabled;
     int borderWidth;
     wxPoint dragStartPos; // Mouse position when dragging starts
     wxPoint noteStartPos; // Initial position of the Note
     wxPoint offset;
     wxFont font;
-    wxWindow* active;
+    //wxWindow* active;
     MainFrame* mainFrame = nullptr;
 
 

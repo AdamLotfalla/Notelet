@@ -27,6 +27,9 @@
     <ClInclude Include="ImagePanel.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="resource.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="MainFrame.cpp">
@@ -41,5 +44,10 @@
     <ClCompile Include="ImagePanel.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="Icon.ico">
+      <Filter>Source Files</Filter>
+    </Image>
   </ItemGroup>
 </Project>
