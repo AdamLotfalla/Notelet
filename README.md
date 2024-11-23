@@ -6,7 +6,7 @@ The app currently offers only stickynotes with all of their functionalities but 
 
 ## Test the app
 Watch a demo video [here](https://drive.google.com/file/d/1Ewvd04BcNNxMeVvaZ1t5m0JgaQ1zVXXC/view?usp=sharing)
-Download the program for this [drive](https://drive.google.com/drive/folders/1eHFIcFspGgeAo4dQFW-o4aptjiVGgcJl?usp=sharing)
+, or ownload the program for this [drive](https://drive.google.com/drive/folders/1eHFIcFspGgeAo4dQFW-o4aptjiVGgcJl?usp=sharing)
 
 ## Basic controls
 - On the left panel, you have the color pane on the top. You can choose what color to change: foreground or background, and then choose the color for that choice. The color chosen will appear beside its corresponding radiobox.
