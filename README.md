@@ -2,10 +2,10 @@
 
 Notelet is a notetaking app built upon stickynotes. it is my first experience in windows app development using wxWidgets in C++.
 
-The app currently offers only stickynotes with all of their functionalities but I aim to add other features like to-do lists and images 
+The app currently offers only stickynotes with all of their functionalities but I aim to add other features like annotation and images 
 
 ## Test the app
-Watch a demo video [here](https://drive.google.com/file/d/1Ewvd04BcNNxMeVvaZ1t5m0JgaQ1zVXXC/view?usp=sharing)
+Watch a demo video [here](https://drive.google.com/file/d/1TVw4F6kulGVK57ZKp9LZ-EN0cC3JiGdy/view?usp=drive_link)
 , or download the program for this [drive](https://drive.google.com/drive/folders/1eHFIcFspGgeAo4dQFW-o4aptjiVGgcJl?usp=sharing)
 
 ## Basic controls
@@ -16,5 +16,11 @@ Watch a demo video [here](https://drive.google.com/file/d/1Ewvd04BcNNxMeVvaZ1t5m
 - To put a note on the top, first select the note and then click **Home** key on the keyboard
 - To put a note on the bottom, first select the note and then click **End** key on the keyboard
 - To delete a note, select the desired note, and press **Delete** key on the keyboard
+- On the right panel, you can add tasks to your To-Do list
+- Enter the description of your task in the text box above, click add or press **Enter** key to add the task
+- On the bottom you have controls
+- To rearrange tasks, select the desired task to move and click either arrow on the bottm right
+- To delete the selected task, click "Delete task"
+- To clear the To-Do list, click on the "Clear" button, a dialog box will appear to confirm your command. Click "Yes" to delete all, or "No"/"Cancel" to go back
 - To Save your work, go to **File >> Save As**
 - To open an old workspace, go to **File >> Open** and select your .XML file
