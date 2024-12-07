@@ -7,10 +7,7 @@
 #include <wx/wrapsizer.h>
 #include "ImagePanel.h"
 #include <deque>
-
-
-
-
+#include "ToDoList.h"
 
 
 class MainFrame : public wxFrame
@@ -18,7 +15,9 @@ class MainFrame : public wxFrame
 public:
 	MainFrame(const wxString& title);
 	wxPanel* ColorPtr;
-	Note* active = nullptr;
+	Note* activeNote = nullptr;
+	ToDoList* activeToDo = nullptr;
+	bool occupied = false;
 	std::vector<wxPanel*> paletes;
 	wxColor NoteBColor = wxColor("#FFDB58");
 	wxColor NoteFColor = wxColor("#2f2f2f");
@@ -26,6 +25,20 @@ public:
 
 	int noteDefaultPosX;
 	int noteDefaultPosY;
+
+	wxButton* addButton;
+	wxTextCtrl* inputField;
+	wxGridSizer* grid;
+	wxBoxSizer* mainSizer;
+	wxBoxSizer* inputSizer;
+	wxStaticText* headlineText;
+	wxCheckListBox* checkListBox;
+	wxButton* clearButton;
+	wxButton* deleteButton;
+	wxButton* upButton;
+	wxButton* downButton;
+	wxArrayString tasks;
+	wxBoxSizer* toDoButtonsSizer;
 
 	wxRadioBox* F_BColorCheck;
 	wxArrayString ColorChoices;
@@ -37,7 +50,11 @@ public:
 
 	wxSplitterWindow* splitter;
 	wxPanel* sidePanel;
+	wxPanel* mainPanel;
+	wxPanel* toDoPanel;
 	wxSplitterWindow* sidePanelSplitter;
+	wxSplitterWindow* toDoSplitter;
+	wxWindow* listName;
 
 	wxButton* button;
 	wxButton* updateButton;
@@ -51,13 +68,21 @@ public:
 	wxBoxSizer* sidePanelSizer;
 	wxBoxSizer* colorPanelSizer;
 	wxBoxSizer* notePanelSizer;
+	wxBoxSizer* toDoPanelSizer;
 	wxBoxSizer* stylingSizer;
 	wxBoxSizer* colorSelectSizer;
 	wxBoxSizer* colorChoiceSizer;
+	wxBoxSizer* querySizer;
 
 	wxWrapSizer* colorWraper;
 
+	wxTextCtrl* queryEnterName;
+	wxButton* queryAdd;
+
+	wxDialog* listNameDialog;
+
 	std::deque<Note* > notes;
+	std::deque<ToDoList*> todolists;
 	//std::vector<ImagePanel*> imagePanels;
 
 
@@ -97,7 +122,8 @@ public:
 	bool isItalic = false;
 	bool isUnderlined = false;
 
-	void SetActive(Note* activeNote);
+	void SetActive(Note* activenote);
+	void SetActiveToDo(ToDoList* activetodo);
 
 private:
 	wxTextCtrl* noteEnterText;
@@ -112,6 +138,11 @@ private:
 	void configureObjects();
 	void SaveNotesToFile(const wxString& filePath);
 	void LoadNotesFromFile(const wxString& filePath);
+	void MakeToDoList();
+	void AddTaskFromInput();
+	void MakeNote();
+	void MoveSelectedTask(int offset);
+	void SwapTasks(int i, int j);
 
 
 	// Events
@@ -123,13 +154,19 @@ private:
 	void OnItalicSelect(wxCommandEvent& evt);
 	void OnUnderlinedSelect(wxCommandEvent& evt);
 	void PaintColorBorder(wxPaintEvent& evt);
-	void CreateNoteShortcut(wxKeyEvent& evt);
+	void shortcuts(wxKeyEvent& evt);
 	void OnDelete(wxKeyEvent& evt);
 	void OnFileSave(wxCommandEvent& evt);
 	void OnFileSaveAs(wxCommandEvent& evt);
 	void OnFileOpen(wxCommandEvent& evt);
 	void OnFileExit(wxCommandEvent& evt);
 	void OnAddImage(wxCommandEvent& evt);
-
+	void OnAddToDo(wxCommandEvent& evt);
+	void AddListName(wxCommandEvent& evt);
+	void OnAddButtonClicked(wxCommandEvent& evt);
+	void OnInputEnter(wxCommandEvent& evt);
+	void OnClearButton(wxCommandEvent& evt);
+	void OnDeleteTask(wxCommandEvent& evt);
+	void moveDown(wxCommandEvent& evt);
+	void moveUp(wxCommandEvent& evt);
 };
-

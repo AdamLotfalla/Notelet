@@ -68,19 +68,29 @@ void Note::UpdateNote(int newWidth, int newHeight, wxString newText, wxFont newF
     stickynote->SetBackgroundColour(newBcolor);
     textContent->SetForegroundColour(newFcolor);
 
+    fcolor = newFcolor;
+    bcolor = newBcolor;
+    font = newFont;
+
     Refresh();
     wxLogStatus("Updated; supposed to be");
 }
 
 void Note::onMouseEnter(wxMouseEvent& evt) {
-    textContent->SetCursor(wxCURSOR_OPEN_HAND);
-    mHover = true;
-    wxLogStatus("Entered");
+    if (!mainFrame->occupied) {
+        textContent->SetCursor(wxCURSOR_OPEN_HAND);
+        mHover = true;
+        wxLogStatus("Entered");
+        evt.Skip();
+    }
 }
 
 void Note::onMouseLeave(wxMouseEvent& evt) {
-    mHover = false;
-    wxLogStatus("Exited");
+    if (!mainFrame->occupied) {
+        mHover = false;
+        wxLogStatus("Exited");
+        evt.Skip();
+    }
 }
 
 void Note::NotePaintBorder(wxPaintEvent& evt) {
@@ -106,26 +116,32 @@ void Note::NotePaintBorder(wxPaintEvent& evt) {
 }
 
 void Note::OnLeftMouseDown(wxMouseEvent& evt) {
-    if (mHover && !mHold) { mHold = true; }
-    offset = wxGetMousePosition() - this->GetPosition();
-    mainFrame->SetActive(this);
+    if (!mainFrame->occupied) {
+        if (mHover && !mHold) { mHold = true; }
+        offset = wxGetMousePosition() - this->GetPosition();
+        mainFrame->SetActive(this);
 
-    textContent->Unbind(wxEVT_LEFT_DOWN, &Note::OnLeftMouseDown, this);
-    textContent->Unbind(wxEVT_ENTER_WINDOW, &Note::onMouseEnter, this);
-    textContent->Unbind(wxEVT_LEAVE_WINDOW, &Note::onMouseLeave, this);
+        //textContent->Unbind(wxEVT_LEFT_DOWN, &Note::OnLeftMouseDown, this);
+        //textContent->Unbind(wxEVT_ENTER_WINDOW, &Note::onMouseEnter, this);
+        textContent->Unbind(wxEVT_LEAVE_WINDOW, &Note::onMouseLeave, this);
+        wxLogStatus("Occupation is %i", mainFrame->occupied);
+    }
 }
 
 void Note::OnMouseMove(wxMouseEvent& evt) {
     if (mHold) {
+        mainFrame->occupied = true;
         textContent->SetCursor(wxCURSOR_CLOSED_HAND);
         auto mPos = wxGetMousePosition();
-        this->SetPosition(mPos - offset);
+        mainFrame->activeNote->SetPosition(mPos - offset);
     }
 }
 
 void Note::OnLeftMouseUp(wxMouseEvent& evt) {
     mHold = false;
-    textContent->Bind(wxEVT_ENTER_WINDOW, &Note::onMouseEnter, this);
+    mainFrame->occupied = false;
+    wxLogStatus("Occupation is %i", mainFrame->occupied);
+    //textContent->Bind(wxEVT_ENTER_WINDOW, &Note::onMouseEnter, this);
     textContent->Bind(wxEVT_LEAVE_WINDOW, &Note::onMouseLeave, this);
-    textContent->Bind(wxEVT_LEFT_DOWN, &Note::OnLeftMouseDown, this);
+    //textContent->Bind(wxEVT_LEFT_DOWN, &Note::OnLeftMouseDown, this);
 }

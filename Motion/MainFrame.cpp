@@ -14,7 +14,8 @@
 #include <wx/bitmap.h>
 #include <deque>
 #include <wx/icon.h>
-
+#include "ToDoList.h"
+#include <string>
 
 
 MainFrame::MainFrame(const wxString& title) : wxFrame(nullptr, wxID_ANY, title) {
@@ -30,7 +31,12 @@ MainFrame::MainFrame(const wxString& title) : wxFrame(nullptr, wxID_ANY, title) 
 	italicButton->Bind(wxEVT_TOGGLEBUTTON, &MainFrame::OnItalicSelect, this);
 	underlineButton->Bind(wxEVT_TOGGLEBUTTON, &MainFrame::OnUnderlinedSelect, this);
 	updateButton->Bind(wxEVT_BUTTON, &MainFrame::OnUpdateButtonClicked, this);
-	this->Bind(wxEVT_CHAR_HOOK, &MainFrame::CreateNoteShortcut, this);
+	clearButton->Bind(wxEVT_BUTTON, &MainFrame::OnClearButton, this);
+	deleteButton->Bind(wxEVT_BUTTON, &MainFrame::OnDeleteTask, this);
+	upButton->Bind(wxEVT_BUTTON, &MainFrame::moveUp, this);
+	downButton->Bind(wxEVT_BUTTON, &MainFrame::moveDown, this);
+
+	this->Bind(wxEVT_CHAR_HOOK, &MainFrame::shortcuts, this);
 
 	Bind(wxEVT_MENU, &MainFrame::OnFileSave, this, wxID_SAVE);
 	Bind(wxEVT_MENU, &MainFrame::OnFileSaveAs, this, wxID_SAVEAS);
@@ -38,7 +44,7 @@ MainFrame::MainFrame(const wxString& title) : wxFrame(nullptr, wxID_ANY, title) 
 	Bind(wxEVT_MENU, &MainFrame::OnFileExit, this, wxID_EXIT);
 	Bind(wxEVT_MENU, &MainFrame::OnNoteButtonClicked, this, wxID_NEW);
 	Bind(wxEVT_MENU, &MainFrame::OnAddImage, this, wxID_ADD);
-
+	//Bind(wxEVT_MENU, &MainFrame::OnAddToDo, this, 5);
 
 	//panel->Bind(wxEVT_CHAR_HOOK, &MainFrame::OnDelete, this);
 
@@ -53,13 +59,78 @@ void MainFrame::declareVariables() {
 
 	noteDefaultPosX = 200;
 	noteDefaultPosY = 250;
+
 }
 void MainFrame::declareObjects(wxWindow* parent) {
 	// --- Splitter windows ---
 	splitter = new wxSplitterWindow(parent, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxSP_BORDER | wxSP_LIVE_UPDATE);
 	panel = new wxPanel(splitter);
 	sidePanel = new wxPanel(splitter, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxWANTS_CHARS);
+
 	sidePanelSplitter = new wxSplitterWindow(sidePanel, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxSP_BORDER | wxSP_LIVE_UPDATE);
+
+	toDoPanelSizer = new wxBoxSizer(wxHORIZONTAL);
+	panel->SetSizerAndFit(toDoPanelSizer);
+	toDoSplitter = new wxSplitterWindow(panel, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxSP_BORDER | wxSP_LIVE_UPDATE);
+	toDoPanelSizer->Add(toDoSplitter, 1, wxEXPAND);
+	mainPanel = new wxPanel(toDoSplitter);
+	toDoPanel = new wxPanel(toDoSplitter);
+
+	toDoSplitter->SplitVertically(mainPanel, toDoPanel, FromDIP(-150));
+	toDoSplitter->SetMinimumPaneSize(200);
+
+
+	wxFont headlineFont(wxFontInfo(wxSize(0, 14)).Bold());
+	wxFont mainFont(wxFontInfo(wxSize(0, 12)));
+
+	toDoPanel->SetFont(mainFont);
+
+	headlineText = new wxStaticText(toDoPanel, wxID_ANY, "To-Do list", wxPoint(-1, -1), wxSize(-1, -1), wxALIGN_CENTER_HORIZONTAL);
+	headlineText->SetFont(headlineFont);
+
+	inputField = new wxTextCtrl(toDoPanel, wxID_ANY, "", wxDefaultPosition /*wxPoint(100, 80)*/, wxSize(-1, 25), wxTE_PROCESS_ENTER);
+	addButton = new wxButton(toDoPanel, wxID_ANY, "Add", wxDefaultPosition /*wxPoint(600, 80)*/, wxSize(-1, 25));
+	checkListBox = new wxCheckListBox(toDoPanel, wxID_ANY, wxDefaultPosition /*wxPoint(100, 120)*/, wxSize(-1, -1), tasks, wxTE_MULTILINE | wxTE_NO_VSCROLL);
+	clearButton = new wxButton(toDoPanel, wxID_ANY, "Clear", wxDefaultPosition /*wxPoint(100, 525)*/, wxSize(-1, 25));
+	deleteButton = new wxButton(toDoPanel, wxID_ANY, "Delete task", wxDefaultPosition /*wxPoint(100, 525)*/, wxSize(-1, 25));
+	wxFont buttonFont(12, wxFONTFAMILY_DEFAULT, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_NORMAL, false, "Arial Unicode MS");
+	upButton = new wxButton(toDoPanel, wxID_ANY, L"\u21e7", wxDefaultPosition, wxSize(25, 25));
+	upButton->SetFont(buttonFont);
+	downButton = new wxButton(toDoPanel, wxID_ANY, L"\u21e9", wxDefaultPosition, wxSize(25, 25));
+	downButton->SetFont(buttonFont);
+	toDoButtonsSizer = new wxBoxSizer(wxHORIZONTAL);
+
+
+	mainSizer = new wxBoxSizer(wxVERTICAL);
+	mainSizer->AddSpacer(10);
+	mainSizer->Add(headlineText, wxSizerFlags().CenterHorizontal());
+	mainSizer->AddSpacer(10);
+
+	inputSizer = new wxBoxSizer(wxHORIZONTAL);
+	inputSizer->AddSpacer(5);
+	inputSizer->Add(inputField, wxSizerFlags().Proportion(1));
+	inputSizer->AddSpacer(1);
+	inputSizer->Add(addButton);
+	inputSizer->AddSpacer(5);
+
+	mainSizer->Add(inputSizer, wxSizerFlags().Expand());
+	mainSizer->Add(checkListBox, wxSizerFlags().Proportion(1).Expand().Border(wxALL, 5));
+	toDoButtonsSizer->AddSpacer(5);
+	toDoButtonsSizer->Add(clearButton, 1, wxEXPAND);
+	toDoButtonsSizer->AddSpacer(1);
+	toDoButtonsSizer->Add(deleteButton, 1, wxEXPAND);
+	toDoButtonsSizer->AddSpacer(1);
+	toDoButtonsSizer->Add(upButton, 0, wxEXPAND);
+	toDoButtonsSizer->AddSpacer(1);
+	toDoButtonsSizer->Add(downButton, 0, wxEXPAND);
+	toDoButtonsSizer->AddSpacer(5);
+	mainSizer->Add(toDoButtonsSizer, 0, wxEXPAND);
+	mainSizer->AddSpacer(5);
+
+	toDoPanel->SetSizerAndFit(mainSizer);
+
+	addButton->Bind(wxEVT_BUTTON, &MainFrame::OnAddButtonClicked, this);
+	inputField->Bind(wxEVT_TEXT_ENTER, &MainFrame::OnInputEnter, this);
 
 	// --- Panels ---
 	colorPanel = new wxPanel(sidePanelSplitter);
@@ -69,23 +140,23 @@ void MainFrame::declareObjects(wxWindow* parent) {
 	noteEnterText = new wxTextCtrl(notePanel, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxTE_MULTILINE | wxTE_NO_VSCROLL);
 
 	// --- Buttons and Toggles ---
-	button = new wxButton(notePanel, wxID_ANY, "Add note", wxDefaultPosition, wxSize(-1, 25));
-	updateButton = new wxButton(notePanel, wxID_ANY, "Update", wxDefaultPosition, wxSize(-1, 25));
+	button = new wxButton(notePanel, wxID_ANY, "Add note", wxDefaultPosition, wxSize(-1, FromDIP(25)));
+	updateButton = new wxButton(notePanel, wxID_ANY, "Update", wxDefaultPosition, wxSize(-1, FromDIP(25)));
 
 	// Bold toggle button
-	boldButton = new wxToggleButton(notePanel, wxID_ANY, "B", wxDefaultPosition, wxSize(25, 25));
+	boldButton = new wxToggleButton(notePanel, wxID_ANY, "B", wxDefaultPosition, wxSize(FromDIP(25), FromDIP(25)));
 	font = boldButton->GetFont();
 	font.MakeBold();
 	boldButton->SetFont(font);
 
 	// Italic toggle button
-	italicButton = new wxToggleButton(notePanel, wxID_ANY, "I", wxDefaultPosition, wxSize(25, 25));
+	italicButton = new wxToggleButton(notePanel, wxID_ANY, "I", wxDefaultPosition, wxSize(FromDIP(25), FromDIP(25)));
 	font = italicButton->GetFont();
 	font.MakeItalic();
 	italicButton->SetFont(font);
 
 	// Underline toggle button
-	underlineButton = new wxToggleButton(notePanel, wxID_ANY, "U", wxDefaultPosition, wxSize(25, 25));
+	underlineButton = new wxToggleButton(notePanel, wxID_ANY, "U", wxDefaultPosition, wxSize(FromDIP(25), FromDIP(25)));
 	font = underlineButton->GetFont();
 	font.MakeUnderlined();
 	underlineButton->SetFont(font);
@@ -99,8 +170,8 @@ void MainFrame::declareObjects(wxWindow* parent) {
 
 	// --- Color-related elements ---
 	F_BColorCheck = new wxRadioBox(colorPanel, wxID_ANY, "Choose what color to change: ", wxDefaultPosition, wxDefaultSize, ColorChoices, 1);
-	fColorChoice = new wxPanel(colorPanel, wxID_ANY, wxDefaultPosition, wxSize(25, 25));
-	bColorChoice = new wxPanel(colorPanel, wxID_ANY, wxDefaultPosition, wxSize(25, 25));
+	fColorChoice = new wxPanel(colorPanel, wxID_ANY, wxDefaultPosition, wxSize(FromDIP(25), FromDIP(25)));
+	bColorChoice = new wxPanel(colorPanel, wxID_ANY, wxDefaultPosition, wxSize(FromDIP(25), FromDIP(25)));
 	colorPanelTitle = new wxStaticText(colorPanel, wxID_ANY, "Color palette");
 
 	// --- Titles ---
@@ -118,6 +189,7 @@ void MainFrame::declareObjects(wxWindow* parent) {
 	fileMenu->Append(wxID_EXIT, "E&xit", "Exit the application");
 
 	addMenu->Append(wxID_NEW, "&Add Note\tCtrl-N", "Add a new note");
+	addMenu->Append(5, "&Add To-Do List", "Add a new To-Do list");
 	//addMenu->Append(wxID_ADD, "&Add Image\tCtrl-I", "Add an image to the panel");
 
 	menuBar->Append(fileMenu, "&File");
@@ -139,7 +211,7 @@ void MainFrame::addSizers() {
 	colorChoiceSizer = new wxBoxSizer(wxVERTICAL);
 
 	for (int i = 0; i < colorPalette.size(); i++) {
-		auto color = new wxPanel(colorPanel, wxID_ANY, wxPoint(-1, -1), wxSize(25, 25));
+		auto color = new wxPanel(colorPanel, wxID_ANY, wxPoint(-1, -1), wxSize(FromDIP(25), FromDIP(25)));
 		color->SetBackgroundColour(wxColor(colorPalette[i]));
 		color->Bind(wxEVT_PAINT, &MainFrame::PaintColorBorder, this);
 		paletes.push_back(color);
@@ -182,11 +254,11 @@ void MainFrame::configureObjects() {
 	panel->SetBackgroundColour(wxColor("#ffffff"));
 	sidePanel->SetBackgroundColour(wxColor("#f7f7f5"));
 	sidePanel->SetSizerAndFit(sidePanelSizer);
-	splitter->SplitVertically(sidePanel, panel, 100);
-	splitter->SetMinimumPaneSize(220);
+	splitter->SplitVertically(sidePanel, panel, FromDIP(100));
+	splitter->SetMinimumPaneSize(FromDIP(220));
 	colorPanel->SetSizerAndFit(colorPanelSizer);
 	notePanel->SetSizerAndFit(notePanelSizer);
-	sidePanelSplitter->SplitHorizontally(colorPanel, notePanel, 150);
+	sidePanelSplitter->SplitHorizontally(colorPanel, notePanel, FromDIP(150));
 	sidePanelSplitter->SetMinimumPaneSize(200);
 	noteEnterText->SetForegroundColour(wxColor("9f9e9b"));
 	colorPanelTitle->SetFont(font);
@@ -216,6 +288,14 @@ void MainFrame::SaveNotesToFile(const wxString& filePath) {
 		wxXmlNode* textNode = new wxXmlNode(wxXML_TEXT_NODE, "", note->text);
 		noteNode->AddChild(textNode);
 		root->AddChild(noteNode);
+	}
+
+	for (int i = 0; i < checkListBox->GetCount(); i++) {
+		wxXmlNode* taskNode = new wxXmlNode(wxXML_ELEMENT_NODE, "Task");
+		taskNode->AddAttribute("Description", checkListBox->GetString(i));
+		taskNode->AddAttribute("State", wxString::Format("%i", checkListBox->IsChecked(i)));
+
+		root->AddChild(taskNode);
 	}
 
 	if (!xmlDoc.Save(filePath)) {
@@ -260,28 +340,60 @@ void MainFrame::LoadNotesFromFile(const wxString& filePath) {
 
 			wxString text = child->GetNodeContent();
 
-			Note* note = new Note(150, 150, 0, x, y, text, font, foreground, background, panel, this);
+			Note* note = new Note(FromDIP(150), FromDIP(150), 0, x, y, text, font, foreground, background, mainPanel, this);
 			notes.push_back(note);
+		}
+		else if (child->GetName() == "Task") {
+			wxString description = child->GetAttribute("Description", "error loading task");
+			int state = wxAtoi(child->GetAttribute("State", "0"));
+
+			checkListBox->Insert(description, checkListBox->GetCount());
+			checkListBox->Check(checkListBox->GetCount()-1, state);
 		}
 		child = child->GetNext();
 	}
 
 	wxLogStatus("File loaded successfully!");
 }
-void MainFrame::SetActive(Note* activeNote) {
-	if (activeNote == nullptr) {
+void MainFrame::SetActive(Note* activenote) {
+	if (activenote == nullptr) {
 		wxLogStatus("Attempting to set active note to nullptr.");
 		return;
 	}
-	active = activeNote;
-	noteEnterText->SetLabel(active->text);
+	activeNote = activenote;
+	noteEnterText->SetLabel(activeNote->text);
 	noteEnterText->SelectAll();
-	wxLogStatus("Active ID: %i", active->GetId());
+	wxLogStatus("Active ID: %i", activeNote->GetId());
 }
-
-
-// Events
-void MainFrame::OnNoteButtonClicked(wxCommandEvent& evt) {
+//void MainFrame::SetActiveToDo(ToDoList* activetodo) {
+//	if (activetodo == nullptr) {
+//		wxLogStatus("Attempting to set active note to nullptr.");
+//		return;
+//	}
+//	activeToDo = activetodo;
+//	wxLogStatus("Active ID: %i", activeToDo->GetId());
+//}
+//void MainFrame::MakeToDoList() {
+//	listNameDialog = new wxDialog(this, wxID_ANY, "Add New List", wxDefaultPosition, wxSize(300, 65));
+//	listNameDialog->Center();
+//	querySizer = new wxBoxSizer(wxHORIZONTAL);
+//
+//	queryEnterName = new wxTextCtrl(listNameDialog, wxID_ANY, wxEmptyString, wxDefaultPosition, wxSize(-1, 25));
+//	queryAdd = new wxButton(listNameDialog, wxID_ANY, "Add list", wxDefaultPosition, wxSize(70, 25));
+//
+//	querySizer->Add(queryEnterName, 1, wxALL | wxEXPAND, 1);
+//	querySizer->Add(queryAdd, 0, wxALL, 1);
+//
+//	listNameDialog->SetSizer(querySizer);      // Set the sizer
+//
+//	queryAdd->Bind(wxEVT_BUTTON, &MainFrame::AddListName, this);
+//
+//	listNameDialog->ShowModal(); // Display as modal popup
+//	delete listNameDialog; // Destroy the dialog after use
+//}
+void MainFrame::MakeNote()
+{
+	wxLogStatus("control pressed");
 	auto message = noteEnterText->GetValue();
 	font.SetWeight(wxFONTWEIGHT_NORMAL);
 	font.SetStyle(wxFONTSTYLE_NORMAL);
@@ -290,24 +402,60 @@ void MainFrame::OnNoteButtonClicked(wxCommandEvent& evt) {
 	if (isItalic) { font.MakeItalic(); }
 	if (isUnderlined) { font.MakeUnderlined(); }
 
-	Note* note = new Note(150, 150, 0, noteDefaultPosX, noteDefaultPosY, message, font, NoteFColor, NoteBColor, panel, this);
+	Note* note = new Note(FromDIP(150), FromDIP(150), 0, noteDefaultPosX, noteDefaultPosY, message, font, NoteFColor, NoteBColor, mainPanel, this);
 	notes.push_back(note);
 	wxLogStatus(wxString::Format("note created at (%d,%d)", note->GetPosition().x, note->GetPosition().y));
-	active = note;
 	noteEnterText->SelectAll();
-	if (noteDefaultPosX + note->GetSize().x + 50 < this->GetSize().GetWidth() && noteDefaultPosY + note->GetSize().y + 50 < this->GetSize().GetHeight()) {
-		noteDefaultPosX += 25;
-		noteDefaultPosY += 25;
+	activeNote = note;
+	if (noteDefaultPosX + note->GetSize().x + FromDIP(50) < this->GetSize().GetWidth() && noteDefaultPosY + note->GetSize().y + FromDIP(50) < this->GetSize().GetHeight()) {
+		noteDefaultPosX += FromDIP(25);
+		noteDefaultPosY += FromDIP(25);
 	}
 	else {
 		noteDefaultPosX = 0;
 		noteDefaultPosY = 0;
 	}
+
+}
+void MainFrame::MoveSelectedTask(int offset){
+	int selectedIndex = checkListBox->GetSelection();
+
+	if (selectedIndex == wxNOT_FOUND) {
+		return;
+	}
+
+	int newIndex = selectedIndex + offset;
+
+	if (newIndex >= 0 && newIndex < checkListBox->GetCount()) {
+		SwapTasks(selectedIndex, newIndex);
+		checkListBox->SetSelection(newIndex, true);
+	}
+}
+
+void MainFrame::SwapTasks(int i, int j) {
+
+	auto task1 = checkListBox->GetString(i);
+	auto task2 = checkListBox->GetString(j);
+	bool task1state = checkListBox->IsChecked(i);
+	bool task2state = checkListBox->IsChecked(j);
+
+	checkListBox->SetString(j, task1);
+	checkListBox->Check(j, task1state);
+
+	checkListBox->SetString(i, task2);
+	checkListBox->Check(i, task2state);
+
+}
+
+
+// Events
+void MainFrame::OnNoteButtonClicked(wxCommandEvent& evt) {
+	MakeNote();
 	evt.Skip();
 }
 void MainFrame::OnUpdateButtonClicked(wxCommandEvent& evt)
 {
-	if (active != nullptr) {
+	if (activeNote != nullptr) {
 		auto message = noteEnterText->GetValue();
 		font.SetWeight(wxFONTWEIGHT_NORMAL);
 		font.SetStyle(wxFONTSTYLE_NORMAL);
@@ -316,7 +464,7 @@ void MainFrame::OnUpdateButtonClicked(wxCommandEvent& evt)
 		if (isItalic) { font.MakeItalic(); }
 		if (isUnderlined) { font.MakeUnderlined(); }
 
-		active->UpdateNote(150, 150, message, font, NoteFColor, NoteBColor);
+		activeNote->UpdateNote(FromDIP(150), FromDIP(150), message, font, NoteFColor, NoteBColor);
 	}
 }
 void MainFrame::OnColorChoose(wxMouseEvent& evt) {
@@ -361,58 +509,54 @@ void MainFrame::PaintColorBorder(wxPaintEvent& evt) {
 	//dc.SetPen(wxPen(*wxWHITE, 2)); // Black color, 2-pixel width
 
 	//// Draw the rectangle outline
-	//dc.DrawRectangle(0, 0, 25, 25);
+	//dc.DrawRectangle(0, 0, FromDIP(25), FromDIP(25));
 }
-void MainFrame::CreateNoteShortcut(wxKeyEvent& evt)
+void MainFrame::shortcuts(wxKeyEvent& evt)
 {
 	wxLogStatus("Key pressed");
 	if (evt.ControlDown() && evt.GetKeyCode() == 'N') {
-		wxLogStatus("control pressed");
-		auto message = noteEnterText->GetValue();
-		font.SetWeight(wxFONTWEIGHT_NORMAL);
-		font.SetStyle(wxFONTSTYLE_NORMAL);
-		font.SetUnderlined(false);
-		if (isBold) { font.MakeBold(); }
-		if (isItalic) { font.MakeItalic(); }
-		if (isUnderlined) { font.MakeUnderlined(); }
-
-		Note* note = new Note(150, 150, 0, noteDefaultPosX, noteDefaultPosY, message, font, NoteFColor, NoteBColor, panel, this);
-		notes.push_back(note);
-		wxLogStatus(wxString::Format("note created at (%d,%d)", note->GetPosition().x, note->GetPosition().y));
-		noteEnterText->SelectAll();
-		active = note;
-		if (noteDefaultPosX + note->GetSize().x + 50 < this->GetSize().GetWidth() && noteDefaultPosY + note->GetSize().y + 50 < this->GetSize().GetHeight()) {
-			noteDefaultPosX += 25;
-			noteDefaultPosY += 25;
-		}
-		else {
-			noteDefaultPosX = 0;
-			noteDefaultPosY = 0;
-		}
-
+		MakeNote();
 		evt.Skip(false);
 		return;
 	}
+	else if (evt.ControlDown() && evt.GetKeyCode() == 'U') {
+		if (activeNote != nullptr) {
+			auto message = noteEnterText->GetValue();
+			font.SetWeight(wxFONTWEIGHT_NORMAL);
+			font.SetStyle(wxFONTSTYLE_NORMAL);
+			font.SetUnderlined(false);
+			if (isBold) { font.MakeBold(); }
+			if (isItalic) { font.MakeItalic(); }
+			if (isUnderlined) { font.MakeUnderlined(); }
+
+			activeNote->UpdateNote(FromDIP(150), FromDIP(150), message, font, NoteFColor, NoteBColor);
+		}
+	}
+	//else if (evt.ControlDown() && evt.GetKeyCode() == 'T') {
+	//	MakeToDoList();
+	//}
 	else if (evt.GetKeyCode() == WXK_DELETE) {
-		auto it = std::find(notes.begin(), notes.end(), active);
-		notes.erase(it);
-		active->Destroy();
-		active = nullptr;
+		if(notes.size() > 0){
+			auto it = std::find(notes.begin(), notes.end(), activeNote);
+			notes.erase(it);
+			activeNote->Destroy();
+			activeNote = nullptr;
+		}
 	}
 	else if (evt.GetKeyCode() == WXK_HOME) {
-		active->Raise();
+		activeNote->Raise();
 	}
 	else if (evt.GetKeyCode() == WXK_END) {
-		active->Lower();
+		activeNote->Lower();
 	}
 
 	evt.Skip();
 }
 void MainFrame::OnDelete(wxKeyEvent& evt)
 {
-	if (active != nullptr) {
-		active->Destroy();
-		active = nullptr;
+	if (activeNote != nullptr) {
+		activeNote->Destroy();
+		activeNote = nullptr;
 	}
 	else {
 		wxLogStatus("No active note to delete.");
@@ -499,4 +643,67 @@ void MainFrame::OnAddImage(wxCommandEvent& event) {
 	//		wxLogError("Failed to load the image: %s", fileName);
 	//	}
 	//}
+}
+//void MainFrame::OnAddToDo(wxCommandEvent& evt)
+//{
+//	MakeToDoList();
+//}
+void MainFrame::AddListName(wxCommandEvent& evt)
+{
+	auto todo = new ToDoList(noteDefaultPosX, noteDefaultPosY, 100, 200, panel, queryEnterName->GetValue(), this);
+	todolists.push_back(todo);
+	listNameDialog->EndModal(wxID_OK);
+	listNameDialog->Destroy();
+	listNameDialog = nullptr;
+}
+void MainFrame::AddTaskFromInput()
+{
+	wxString description = inputField->GetValue();
+	if (!description.IsEmpty()) {
+		checkListBox->Insert(description, checkListBox->GetCount());
+		inputField->Clear();
+	}
+	inputField->SetFocus();
+}
+void MainFrame::OnAddButtonClicked(wxCommandEvent& evt)
+{
+	AddTaskFromInput();
+}
+void MainFrame::OnInputEnter(wxCommandEvent& evt)
+{
+	AddTaskFromInput();
+}
+void MainFrame::OnClearButton(wxCommandEvent& evt)
+{
+	if (checkListBox->IsEmpty()) {
+		return;
+	}
+
+	wxMessageDialog dialog(this, "Are you sure you want to clear your To-Do list?", "Clear", wxYES_NO | wxCANCEL);
+	int result = dialog.ShowModal();
+
+	if (result == wxID_YES) {
+		checkListBox->Clear();
+	}
+}
+void MainFrame::OnDeleteTask(wxCommandEvent& evt) {
+
+	int selection = checkListBox->GetSelection();
+
+	if (selection == wxNOT_FOUND) {
+		return;
+	}
+
+	checkListBox->Delete(selection);
+
+}
+
+void MainFrame::moveDown(wxCommandEvent& evt)
+{
+	MoveSelectedTask(1);
+}
+
+void MainFrame::moveUp(wxCommandEvent& evt)
+{
+	MoveSelectedTask(-1);
 }

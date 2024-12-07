@@ -16,7 +16,6 @@ public:
     bool mHold;
     bool isActive;
     bool mDrag;
-    bool painted = false;
     bool disabled;
     int borderWidth;
     wxPoint dragStartPos; // Mouse position when dragging starts
