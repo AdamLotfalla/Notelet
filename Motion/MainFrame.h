@@ -47,6 +47,7 @@ public:
 	wxFont font;
 	wxPanel* notePanel;
 	wxPanel* colorPanel;
+	//PaintPanel* drawingPanel;
 
 	wxSplitterWindow* splitter;
 	wxPanel* sidePanel;
@@ -121,6 +122,8 @@ public:
 	bool isBold = false;
 	bool isItalic = false;
 	bool isUnderlined = false;
+	bool isDark = false;
+	bool paint = false;
 
 	void SetActive(Note* activenote);
 	void SetActiveToDo(ToDoList* activetodo);
@@ -169,4 +172,6 @@ private:
 	void OnDeleteTask(wxCommandEvent& evt);
 	void moveDown(wxCommandEvent& evt);
 	void moveUp(wxCommandEvent& evt);
+	void OnChangeDarkMode(wxCommandEvent& evt);
+	void Draw(wxPaintEvent& evt);
 };

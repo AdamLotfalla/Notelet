@@ -16,6 +16,8 @@
 #include <wx/icon.h>
 #include "ToDoList.h"
 #include <string>
+#include <wx/graphics.h>
+
 
 
 MainFrame::MainFrame(const wxString& title) : wxFrame(nullptr, wxID_ANY, title) {
@@ -43,7 +45,9 @@ MainFrame::MainFrame(const wxString& title) : wxFrame(nullptr, wxID_ANY, title) 
 	Bind(wxEVT_MENU, &MainFrame::OnFileOpen, this, wxID_OPEN);
 	Bind(wxEVT_MENU, &MainFrame::OnFileExit, this, wxID_EXIT);
 	Bind(wxEVT_MENU, &MainFrame::OnNoteButtonClicked, this, wxID_NEW);
-	Bind(wxEVT_MENU, &MainFrame::OnAddImage, this, wxID_ADD);
+	Bind(wxEVT_MENU, &MainFrame::OnChangeDarkMode, this, 55);
+
+
 	//Bind(wxEVT_MENU, &MainFrame::OnAddToDo, this, 5);
 
 	//panel->Bind(wxEVT_CHAR_HOOK, &MainFrame::OnDelete, this);
@@ -83,7 +87,11 @@ void MainFrame::declareObjects(wxWindow* parent) {
 	wxFont headlineFont(wxFontInfo(wxSize(0, 14)).Bold());
 	wxFont mainFont(wxFontInfo(wxSize(0, 12)));
 
+
+	this->SetForegroundColour(isDark ? *wxWHITE : *wxBLACK);
+
 	toDoPanel->SetFont(mainFont);
+	toDoPanel->SetBackgroundColour(wxColor(isDark ? "#1e1e1e" : "#f7f7f5"));
 
 	headlineText = new wxStaticText(toDoPanel, wxID_ANY, "To-Do list", wxPoint(-1, -1), wxSize(-1, -1), wxALIGN_CENTER_HORIZONTAL);
 	headlineText->SetFont(headlineFont);
@@ -100,6 +108,21 @@ void MainFrame::declareObjects(wxWindow* parent) {
 	downButton->SetFont(buttonFont);
 	toDoButtonsSizer = new wxBoxSizer(wxHORIZONTAL);
 
+	inputField->SetBackgroundColour(wxColor(isDark ? "#333333" : "#ffffff"));
+	addButton->SetBackgroundColour(wxColor(isDark ? "#333333" : "#ffffff"));
+	checkListBox->SetBackgroundColour(wxColor(isDark ? "#333333" : "#ffffff"));
+	clearButton->SetBackgroundColour(wxColor(isDark ? "#333333" : "#ffffff"));
+	deleteButton->SetBackgroundColour(wxColor(isDark ? "#333333" : "#ffffff"));
+	upButton->SetBackgroundColour(wxColor(isDark ? "#333333" : "#ffffff"));
+	downButton->SetBackgroundColour(wxColor(isDark ? "#333333" : "#ffffff"));
+
+	inputField->SetForegroundColour(wxColor(isDark ? "#ffffff" : "#000000"));
+	addButton->SetForegroundColour(wxColor(isDark ? "#ffffff" : "#000000"));
+	checkListBox->SetForegroundColour(wxColor(isDark ? "#ffffff" : "#000000"));
+	clearButton->SetForegroundColour(wxColor(isDark ? "#ffffff" : "#000000"));
+	deleteButton->SetForegroundColour(wxColor(isDark ? "#ffffff" : "#000000"));
+	upButton->SetForegroundColour(wxColor(isDark ? "#ffffff" : "#000000"));
+	downButton->SetForegroundColour(wxColor(isDark ? "#ffffff" : "#000000"));
 
 	mainSizer = new wxBoxSizer(wxVERTICAL);
 	mainSizer->AddSpacer(10);
@@ -173,14 +196,17 @@ void MainFrame::declareObjects(wxWindow* parent) {
 	fColorChoice = new wxPanel(colorPanel, wxID_ANY, wxDefaultPosition, wxSize(FromDIP(25), FromDIP(25)));
 	bColorChoice = new wxPanel(colorPanel, wxID_ANY, wxDefaultPosition, wxSize(FromDIP(25), FromDIP(25)));
 	colorPanelTitle = new wxStaticText(colorPanel, wxID_ANY, "Color palette");
+	colorPanelTitle->SetForegroundColour(wxColor(isDark ? "ffffff" : "#000000"));
 
 	// --- Titles ---
 	notePanelTitle = new wxStaticText(notePanel, wxID_ANY, "Note options");
+	notePanelTitle->SetForegroundColour(wxColor(isDark ? "ffffff" : "#000000"));
 
 	// Menu Bar
 	wxMenuBar* menuBar = new wxMenuBar();
 	wxMenu* fileMenu = new wxMenu();
 	wxMenu* addMenu = new wxMenu();
+	wxMenu* settings = new wxMenu();
 
 	fileMenu->Append(wxID_SAVE, "&Save\tCtrl-S", "Save the notes");
 	fileMenu->Append(wxID_SAVEAS, "Save &As...", "Save the notes to a specific file");
@@ -190,10 +216,12 @@ void MainFrame::declareObjects(wxWindow* parent) {
 
 	addMenu->Append(wxID_NEW, "&Add Note\tCtrl-N", "Add a new note");
 	addMenu->Append(5, "&Add To-Do List", "Add a new To-Do list");
-	//addMenu->Append(wxID_ADD, "&Add Image\tCtrl-I", "Add an image to the panel");
+
+	settings->Append(55, "Switch Dark/Light", "Switch between dark and light modes");
 
 	menuBar->Append(fileMenu, "&File");
 	menuBar->Append(addMenu, "&Add");
+	menuBar->Append(settings, "&Settings");
 
 	SetMenuBar(menuBar);
 
@@ -251,8 +279,8 @@ void MainFrame::addSizers() {
 	notePanelSizer->Add(noteEnterText, 1, wxEXPAND | wxALL, 2);
 }
 void MainFrame::configureObjects() {
-	panel->SetBackgroundColour(wxColor("#ffffff"));
-	sidePanel->SetBackgroundColour(wxColor("#f7f7f5"));
+	panel->SetBackgroundColour(wxColor(isDark? "#333333":"#ffffff"));
+	sidePanel->SetBackgroundColour(wxColor(isDark? "#1e1e1e":"#f7f7f5"));
 	sidePanel->SetSizerAndFit(sidePanelSizer);
 	splitter->SplitVertically(sidePanel, panel, FromDIP(100));
 	splitter->SetMinimumPaneSize(FromDIP(220));
@@ -260,13 +288,15 @@ void MainFrame::configureObjects() {
 	notePanel->SetSizerAndFit(notePanelSizer);
 	sidePanelSplitter->SplitHorizontally(colorPanel, notePanel, FromDIP(150));
 	sidePanelSplitter->SetMinimumPaneSize(200);
-	noteEnterText->SetForegroundColour(wxColor("9f9e9b"));
+	noteEnterText->SetForegroundColour(wxColor(isDark? "333333":"9f9e9b"));
 	colorPanelTitle->SetFont(font);
-	F_BColorCheck->SetForegroundColour(wxColor("#000000"));
+	F_BColorCheck->SetForegroundColour(wxColor(isDark? "ffffff":"#000000"));
 	F_BColorCheck->SetSelection(1);
 	fColorChoice->SetBackgroundColour(NoteFColor);
 	bColorChoice->SetBackgroundColour(NoteBColor);
 	notePanelTitle->SetFont(font);
+	mainPanel->SetBackgroundColour(wxColor(isDark ? "#333333" : "#ffffff"));
+	toDoPanel->SetBackgroundColour(wxColor(isDark ? "#1e1e1e" : "#f7f7f5"));
 }
 
 void MainFrame::SaveNotesToFile(const wxString& filePath) {
@@ -606,48 +636,6 @@ void MainFrame::OnFileOpen(wxCommandEvent& evt) {
 void MainFrame::OnFileExit(wxCommandEvent& evt) {
 	Close(true);
 }
-void MainFrame::OnAddImage(wxCommandEvent& event) {
-
-
-	wxImage image;
-	image.LoadFile("cat.png", wxBITMAP_TYPE_PNG);
-	//if (!image.LoadFile("C:/Users/EGYTEK/OneDrive/Desktop/cat.png")) {
-	//	// Handle error, e.g., log an error message
-	//	wxLogError("Failed to load image file.");
-	//}
-
-	wxBitmap bitmap = wxBitmap(image);
-	wxStaticBitmap* staticBitmap = new wxStaticBitmap(panel, wxID_ANY, bitmap);
-
-
-	//// Create a file dialog for image selection
-	//wxFileDialog openFileDialog(this, _("Open Image file"), "", "",
-	//	"Image files (*.png;*.jpg)|*.png;*.jpg", wxFD_OPEN | wxFD_FILE_MUST_EXIST);
-
-	//// If the user selects a file and presses OK
-	//if (openFileDialog.ShowModal() == wxID_OK) {
-	//	wxString fileName = openFileDialog.GetPath();
-
-	//	// Try loading the image
-	//	wxImage image(fileName, wxBITMAP_TYPE_ANY); // Alternatively, use wxBITMAP_TYPE_PNG or 
-	//	if (image.IsOk()) {
-	//		// Image loaded successfully, you can display or process it
-
-	//		// For example, display the image in a static bitmap control (assuming you have a wxStaticBitmap)
-	//		// myStaticBitmapControl->SetBitmap(bitmap);
-
-	//		wxBitmap bitmap(image);
-	//		auto imagepanel = new ImagePanel(panel);
-	//	}
-	//	else {
-	//		wxLogError("Failed to load the image: %s", fileName);
-	//	}
-	//}
-}
-//void MainFrame::OnAddToDo(wxCommandEvent& evt)
-//{
-//	MakeToDoList();
-//}
 void MainFrame::AddListName(wxCommandEvent& evt)
 {
 	auto todo = new ToDoList(noteDefaultPosX, noteDefaultPosY, 100, 200, panel, queryEnterName->GetValue(), this);
@@ -706,4 +694,10 @@ void MainFrame::moveDown(wxCommandEvent& evt)
 void MainFrame::moveUp(wxCommandEvent& evt)
 {
 	MoveSelectedTask(-1);
+}
+
+void MainFrame::OnChangeDarkMode(wxCommandEvent& evt)
+{
+	isDark != isDark;
+	Refresh();
 }
