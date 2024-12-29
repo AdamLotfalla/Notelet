@@ -8,6 +8,10 @@ The app currently offers only stickynotes with all of their functionalities but 
 Watch a demo video [here](https://drive.google.com/file/d/1TVw4F6kulGVK57ZKp9LZ-EN0cC3JiGdy/view?usp=drive_link)
 , or download the program for this [drive](https://drive.google.com/drive/folders/1eHFIcFspGgeAo4dQFW-o4aptjiVGgcJl?usp=sharing)
 
+
+https://github.com/user-attachments/assets/534c1b1f-5d58-412c-bccf-e045d98046bd
+
+
 ## Basic controls
 - On the left panel, you have the color pane on the top. You can choose what color to change: foreground or background, and then choose the color for that choice. The color chosen will appear beside its corresponding radiobox.
 - On the left panel, you have the add note options on the bottom. First enter your note text in the text box, choose your formatting: **bold**, **italic**, or **Underlined**, then click **add**, **Ctrl + N**, or go to **Add >> New note** menu to create new.
