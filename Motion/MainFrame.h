@@ -1,94 +1,83 @@
 #pragma once
 #include <wx/wx.h>
-#include "Note.h"
-#include <vector>
-#include <wx/splitter.h>
 #include <wx/tglbtn.h>
+#include <wx/vidmode.h>
+#include <queue>
 #include <wx/wrapsizer.h>
-#include "ImagePanel.h"
-#include <deque>
-#include "ToDoList.h"
+#include <wx/scrolwin.h>
+#include <wx/splitter.h>
+#include "Note.h"
+#include "Tool.h"
+#include "Rectangle.h"
 
+using namespace std;
 
-class MainFrame : public wxFrame
+struct MainFrame : public wxFrame
 {
-public:
-	MainFrame(const wxString& title);
-	wxPanel* ColorPtr;
+	void addToolBar(wxWindow* parent);
+	void addSideBar(wxWindow* parent);
+	void addColorPanel(wxWindow* parent);
+	void addMenuBar();
+	void switchTheme();
+	void UpdateColors();
+	void addScrolledPanel();
+
+	void SetActive(Note* activenote);
+
+	bool isDark;
+	bool isDrawingRect;
+	int noteDefaultPositionX;
+	int noteDefaultPositionY;
+
+	int index;
+	int grandChildren;
+	bool hasGrandChildren;
+	wxPoint startPos;
+	wxPoint endPos;
+	wxPoint bufferPoint;
+
+	rectangle* drawnPanel;
+	//wxPanel* drawnPanel;
+
+	rectangle* lastRectangle;
+
+	bool m_isPanning;
+	wxPoint m_startScrollPos;
+	wxPoint m_scrollOffset;
+
+	vector<wxPanel*> rectangles;
+
+	Tool* NoteTool;
+	Tool* RectangleTool;
+	Tool* ElipseTool;
+
 	Note* activeNote = nullptr;
-	ToDoList* activeToDo = nullptr;
 	bool occupied = false;
-	std::vector<wxPanel*> paletes;
-	wxColor NoteBColor = wxColor("#FFDB58");
-	wxColor NoteFColor = wxColor("#2f2f2f");
-	wxColor NoteColorBuffer;
 
-	int noteDefaultPosX;
-	int noteDefaultPosY;
+	wxColor ForegroundColor;
+	wxColor BackgroundColor;
+	wxColor ColorBuffer;
 
-	wxButton* addButton;
-	wxTextCtrl* inputField;
-	wxGridSizer* grid;
-	wxBoxSizer* mainSizer;
-	wxBoxSizer* inputSizer;
-	wxStaticText* headlineText;
-	wxCheckListBox* checkListBox;
-	wxButton* clearButton;
-	wxButton* deleteButton;
-	wxButton* upButton;
-	wxButton* downButton;
-	wxArrayString tasks;
-	wxBoxSizer* toDoButtonsSizer;
+	queue<wxWindow*> themeQueue1;
+	queue<wxWindow*> themeQueue2;
 
-	wxRadioBox* F_BColorCheck;
-	wxArrayString ColorChoices;
-	wxPanel* fColorChoice;
-	wxPanel* bColorChoice;
-	wxFont font;
-	wxPanel* notePanel;
+	wxWrapSizer* colorWrapSizer;
+
+	wxSplitterWindow* sidePanelsSplitter;
+
+	wxPanel* notToolBarPanel;
 	wxPanel* colorPanel;
-	//PaintPanel* drawingPanel;
+	wxPanel* FcolorChoice;
+	wxPanel* BcolorChoice;
+	wxPanel* notSidePanel;
+	wxScrolledWindow* scrollPanel;
 
-	wxSplitterWindow* splitter;
-	wxPanel* sidePanel;
-	wxPanel* mainPanel;
-	wxPanel* toDoPanel;
-	wxSplitterWindow* sidePanelSplitter;
-	wxSplitterWindow* toDoSplitter;
-	wxWindow* listName;
+	wxFont H2Font;
 
-	wxButton* button;
-	wxButton* updateButton;
-	wxToggleButton* boldButton;
-	wxToggleButton* italicButton;
-	wxToggleButton* underlineButton;
+	wxRadioBox* ColorTypeRadioBox;
 
-	wxStaticText* colorPanelTitle;
-	wxStaticText* notePanelTitle;
-
-	wxBoxSizer* sidePanelSizer;
-	wxBoxSizer* colorPanelSizer;
-	wxBoxSizer* notePanelSizer;
-	wxBoxSizer* toDoPanelSizer;
-	wxBoxSizer* stylingSizer;
-	wxBoxSizer* colorSelectSizer;
-	wxBoxSizer* colorChoiceSizer;
-	wxBoxSizer* querySizer;
-
-	wxWrapSizer* colorWraper;
-
-	wxTextCtrl* queryEnterName;
-	wxButton* queryAdd;
-
-	wxDialog* listNameDialog;
-
-	std::deque<Note* > notes;
-	std::deque<ToDoList*> todolists;
-	//std::vector<ImagePanel*> imagePanels;
-
-
-
-	std::vector<std::string> colorPalette = {
+	MainFrame(const wxString& title);
+	std::vector<std::string> paletteColors = {
 		// Black and White
 		"#000000",  // Black
 		"#FFFFFF",  // White
@@ -118,60 +107,18 @@ public:
 		"#FFDB58", // Mustard Yellow
 		"#2f2f2f"  // Dark Charcoal
 	};
+	std::vector<wxPanel*> paletteSwatches;
 
-	bool isBold = false;
-	bool isItalic = false;
-	bool isUnderlined = false;
-	bool isDark = false;
-	bool paint = false;
-
-	void SetActive(Note* activenote);
-	void SetActiveToDo(ToDoList* activetodo);
-
-private:
-	wxTextCtrl* noteEnterText;
-	wxPanel* panel;
-	wxString currentFilePath; // To store the current file path
-
-	
-	// Methods
-	void declareVariables();
-	void declareObjects(wxWindow* parent);
-	void addSizers();
-	void configureObjects();
-	void SaveNotesToFile(const wxString& filePath);
-	void LoadNotesFromFile(const wxString& filePath);
-	void MakeToDoList();
-	void AddTaskFromInput();
-	void MakeNote();
-	void MoveSelectedTask(int offset);
-	void SwapTasks(int i, int j);
-
-
-	// Events
-	void OnNoteButtonClicked(wxCommandEvent& evt);
-	void OnUpdateButtonClicked(wxCommandEvent& evt);
-	void OnColorChoose(wxMouseEvent& evt);
-	void OnColorHover(wxMouseEvent& evt);
-	void OnBoldSelect(wxCommandEvent& evt);
-	void OnItalicSelect(wxCommandEvent& evt);
-	void OnUnderlinedSelect(wxCommandEvent& evt);
-	void PaintColorBorder(wxPaintEvent& evt);
-	void shortcuts(wxKeyEvent& evt);
-	void OnDelete(wxKeyEvent& evt);
-	void OnFileSave(wxCommandEvent& evt);
-	void OnFileSaveAs(wxCommandEvent& evt);
-	void OnFileOpen(wxCommandEvent& evt);
-	void OnFileExit(wxCommandEvent& evt);
-	void OnAddImage(wxCommandEvent& evt);
-	void OnAddToDo(wxCommandEvent& evt);
-	void AddListName(wxCommandEvent& evt);
-	void OnAddButtonClicked(wxCommandEvent& evt);
-	void OnInputEnter(wxCommandEvent& evt);
-	void OnClearButton(wxCommandEvent& evt);
-	void OnDeleteTask(wxCommandEvent& evt);
-	void moveDown(wxCommandEvent& evt);
-	void moveUp(wxCommandEvent& evt);
-	void OnChangeDarkMode(wxCommandEvent& evt);
-	void Draw(wxPaintEvent& evt);
+	void SwitchThemeButton(wxCommandEvent& evt);
+	void OnSwatchHover(wxMouseEvent& evt);
+	void OnSwatchSelect(wxMouseEvent& evt);
+	void AddNewColor(wxCommandEvent& evt);
+	void AddNote(wxCommandEvent& evt);
+	void OnRightDown(wxMouseEvent& evt);
+	void OnRightUp(wxMouseEvent& evt);
+	void OnMouseMotion(wxMouseEvent& evt);
+	void DrawRectangle(wxCommandEvent& evt);
+	void OnLeftDown(wxMouseEvent& evt);
+	void OnLeftUp(wxMouseEvent& evt);
+	void OnPaint(wxPaintEvent& evt);
 };

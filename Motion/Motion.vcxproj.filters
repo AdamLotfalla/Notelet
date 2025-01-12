@@ -24,13 +24,22 @@
     <ClInclude Include="Note.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="ImagePanel.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="resource.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="ToDoList.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ColorDialog.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="RGB2HSL.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Tool.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Rectangle.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -44,16 +53,34 @@
     <ClCompile Include="Note.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="ImagePanel.cpp">
+    <ClCompile Include="ToDoList.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="ToDoList.cpp">
+    <ClCompile Include="ColorDialog.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Rectangle.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <Image Include="Icon.ico">
-      <Filter>Source Files</Filter>
+    <Image Include="ElipseDarkMode.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="ElipseWhiteMode.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="NoteDarkMode.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="NoteWhiteMode.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="RectangleDarkMode.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="RectangleWhiteMode.ico">
+      <Filter>Resource Files</Filter>
     </Image>
   </ItemGroup>
 </Project>

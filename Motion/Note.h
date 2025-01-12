@@ -1,6 +1,7 @@
 #pragma once
 #include <wx/wx.h>
 #include <string>
+#include <wx/object.h>
 
 class MainFrame;
 
@@ -22,8 +23,8 @@ public:
     wxPoint noteStartPos; // Initial position of the Note
     wxPoint offset;
     wxFont font;
-    //wxWindow* active;
     MainFrame* mainFrame = nullptr;
+
 
 
     // Constructor declaration only
@@ -32,10 +33,9 @@ public:
     void UpdateNote(int newWidth, int newHeight, wxString newText, wxFont newFont, wxColor newFcolor, wxColor newBcolor);
 
     void makeActive(wxMouseEvent& evt);
-    void onMouseEnter(wxMouseEvent& evt);
-    void onMouseLeave(wxMouseEvent& evt);
     void NotePaintBorder(wxPaintEvent& evt);
     void OnLeftMouseDown(wxMouseEvent& evt);
     void OnMouseMove(wxMouseEvent& evt);
     void OnLeftMouseUp(wxMouseEvent& evt);
+    void OnDelete(wxKeyEvent& evt);
 };
