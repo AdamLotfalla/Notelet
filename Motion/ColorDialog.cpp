@@ -6,7 +6,7 @@
 using namespace std;
 
 ColorDialog::ColorDialog(wxWindow* parent, wxString title, MainFrame* frame)
-    : wxDialog(parent, wxID_ANY, title, wxDefaultPosition, wxSize(400, 250)) {
+    : wxDialog(parent, wxID_ANY, title, wxDefaultPosition, wxSize(300, 250)) {
 
     mainframe = frame;
     color = "#000000";
@@ -18,12 +18,12 @@ ColorDialog::ColorDialog(wxWindow* parent, wxString title, MainFrame* frame)
 
     wxArrayString colorFormats = { "RGB", "HSL", "Hex" };
 
-    RH = new wxTextCtrl(this, wxID_ANY, "");
-    GS = new wxTextCtrl(this, wxID_ANY, "");
-    BL = new wxTextCtrl(this, wxID_ANY, "");
-    Hex = new wxTextCtrl(this, wxID_ANY, "");
+    RH = new wxTextCtrl(this, wxID_ANY, "", wxDefaultPosition, wxSize(-1,25));
+    GS = new wxTextCtrl(this, wxID_ANY, "", wxDefaultPosition, wxSize(-1, 25));
+    BL = new wxTextCtrl(this, wxID_ANY, "", wxDefaultPosition, wxSize(-1, 25));
+    Hex = new wxTextCtrl(this, wxID_ANY, "", wxDefaultPosition, wxSize(-1, 25));
 
-    colorPreview = new wxPanel(this);
+    colorPreview = new wxPanel(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxBORDER_SIMPLE);
 
     addButton = new wxButton(this, wxID_ANY, "Add",
         wxDefaultPosition, wxSize(-1, 30));
@@ -71,12 +71,15 @@ ColorDialog::ColorDialog(wxWindow* parent, wxString title, MainFrame* frame)
     BL->Bind(wxEVT_COMMAND_TEXT_UPDATED, &ColorDialog::WriteBoxes, this);
     Hex->Bind(wxEVT_COMMAND_TEXT_UPDATED, &ColorDialog::WriteBoxes, this);
 
+    this->Bind(wxEVT_KEY_DOWN, &ColorDialog::Shortcut, this);
+
     addButton->Bind(wxEVT_BUTTON, &ColorDialog::AddButton, this);
     cancelButton->Bind(wxEVT_BUTTON, &ColorDialog::CancelButton, this);
 
 
 
     // Layout components
+    RH->SetFocus();
     Refresh();
     colorPreview->SetBackgroundColour("#a7a7a7");
     this->Layout();
@@ -85,6 +88,7 @@ ColorDialog::ColorDialog(wxWindow* parent, wxString title, MainFrame* frame)
 void ColorDialog::UpdateVisibility() {
     int selection = colorFormatChoice->GetSelection();
     if (selection == 0 || selection == 1) {
+
         horizontalSizer->Show(true);
         Hex->Hide();
 
@@ -153,11 +157,23 @@ void ColorDialog::UpdateVisibility() {
 void ColorDialog::ChooseFormat(wxCommandEvent& evt)
 {
     UpdateVisibility();
+
+    auto selection = colorFormatChoice->GetSelection();
+
+    if (selection == 0 || selection == 1) {
+        RH->SetFocus();
+    }
+    else if(selection == 2) {
+        Hex->SetFocus();
+    }
+
+    evt.Skip();
 }
 
 void ColorDialog::WriteBoxes(wxCommandEvent& evt)
 {
     UpdateVisibility();
+    evt.Skip();
 }
 
 void ColorDialog::AddButton(wxCommandEvent& evt)
@@ -172,3 +188,12 @@ void ColorDialog::CancelButton(wxCommandEvent& evt)
     this->EndModal(0);
 }
 
+void ColorDialog::Shortcut(wxKeyEvent& evt)
+{
+    if (evt.GetKeyCode() == WXK_NUMPAD_ENTER) {
+        wxCommandEvent dummyEvent;
+
+        AddButton(dummyEvent);
+    }
+    evt.Skip();
+}

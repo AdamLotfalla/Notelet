@@ -2,6 +2,7 @@
 #include <wx/wx.h>
 #include <string>
 #include <wx/object.h>
+#include <wx/richtext/richtextctrl.h>
 
 class MainFrame;
 
@@ -13,6 +14,7 @@ public:
     wxPanel* stickynote;
     wxGridSizer* sizer;
     wxStaticText* textContent;
+    //wxRichTextCtrl* textContent;
     bool mHover;
     bool mHold;
     bool isActive;
@@ -23,7 +25,7 @@ public:
     wxPoint noteStartPos; // Initial position of the Note
     wxPoint offset;
     wxFont font;
-    MainFrame* mainFrame = nullptr;
+    MainFrame* mainframe = nullptr;
 
 
 
@@ -37,5 +39,5 @@ public:
     void OnLeftMouseDown(wxMouseEvent& evt);
     void OnMouseMove(wxMouseEvent& evt);
     void OnLeftMouseUp(wxMouseEvent& evt);
-    void OnDelete(wxKeyEvent& evt);
+    void Shortcuts(wxKeyEvent& evt);
 };

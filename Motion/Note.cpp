@@ -15,13 +15,14 @@ Note::Note(int WIDTH, int HEIGHT, int ROTATION, int X_POS, int Y_POS, wxString T
     fcolor = FCOLOR;
     bcolor = BCOLOR;
     mHold = false;
-    mainFrame = frame;
+    mainframe = frame;
 
     borderWidth = 3;
     mHover = false;
 
     this->SetBackgroundColour(bcolor);
     textContent = new wxStaticText(this, wxID_ANY, text, wxPoint(5,5), wxSize(width-10, height-10), wxST_NO_AUTORESIZE | GCP_JUSTIFY);
+    //textContent = new wxRichTextCtrl(this, wxID_ANY, text, wxPoint(5,5), wxSize(width - 10, height - 10), wxST_NO_AUTORESIZE | GCP_JUSTIFY | wxTE_READONLY);
     textContent->SetFont(font);
     textContent->SetForegroundColour(fcolor);
 
@@ -33,7 +34,7 @@ Note::Note(int WIDTH, int HEIGHT, int ROTATION, int X_POS, int Y_POS, wxString T
     this->Bind(wxEVT_LEFT_UP, &Note::OnLeftMouseUp, this);
     this->Bind(wxEVT_MOTION, &Note::OnMouseMove, this);
     this->Bind(wxEVT_PAINT, &Note::NotePaintBorder, this);
-    this->Bind(wxEVT_KEY_DOWN, &Note::OnDelete, this);
+    this->Bind(wxEVT_KEY_DOWN, &Note::Shortcuts, this);
 
     this->SetDoubleBuffered(true);
     textContent->SetDoubleBuffered(true);
@@ -59,7 +60,9 @@ void Note::UpdateNote(int newWidth, int newHeight, wxString newText, wxFont newF
 }
 
 void Note::NotePaintBorder(wxPaintEvent& evt) {
-    wxPaintDC dc(this);
+    //wxPaintDC dc(this);
+    wxBufferedPaintDC dc(this);
+    dc.Clear();
     
     dc.SetPen(wxPen(wxColour("#7f7f7f"), borderWidth));
     
@@ -70,11 +73,17 @@ void Note::NotePaintBorder(wxPaintEvent& evt) {
     dc.DrawLine(wxPoint(0, height), wxPoint(width, height));
 }
 
-void Note::OnDelete(wxKeyEvent& evt)
+void Note::Shortcuts(wxKeyEvent& evt)
 {
-    if (evt.GetKeyCode() == WXK_DELETE && mainFrame->activeNote == this) {
+    if (evt.GetKeyCode() == WXK_DELETE && mainframe->activeNote == this) {
+        mainframe->activeNote = nullptr;
         this->Destroy();
-        wxLogMessage("Deleted");
+    }
+    else if (evt.GetKeyCode() == WXK_PAGEDOWN) {
+        this->Lower();
+    }
+    else if (evt.GetKeyCode() == WXK_PAGEUP) {
+        this->Raise();
     }
 }
 
@@ -82,16 +91,18 @@ void Note::OnMouseMove(wxMouseEvent& evt) {
     if (mHold && evt.LeftIsDown()  && evt.Dragging()) {
         textContent->SetCursor(wxCURSOR_CLOSED_HAND);
         auto mPos = wxGetMousePosition();
-        mainFrame->activeNote->SetPosition(mPos - offset);
+        mainframe->activeNote->SetPosition(mPos - offset);
     }
 }
 
 void Note::OnLeftMouseDown(wxMouseEvent& evt) {
     mHold = true;
     offset = wxGetMousePosition() - this->GetPosition();
-    mainFrame->SetActive(this);
+    mainframe->SetActive(this);
+    mainframe->activeRectangle = nullptr;
     
     this->CaptureMouse();
+    this->SetFocus();
 }
 
 void Note::OnLeftMouseUp(wxMouseEvent& evt) {

@@ -1,18 +1,40 @@
 #pragma once
 #include <wx/wx.h>
 
-struct rectangle : public wxPanel
+class MainFrame;
+
+struct rectangle : public wxWindow
 {
-	rectangle(wxWindow* PARENT, wxPoint STARTPOS, wxSize defaultSize, int SIZE, wxColor COLOR);
+	rectangle(wxWindow* PARENT, wxPoint STARTPOS, wxSize defaultSize, int SIZE, wxColor FCOLOR, wxColor BCOLOR, MainFrame* FRAME);
 
 	wxPoint startPos;
 	wxPoint endPos;
+	wxPoint bufferPoint;
+	wxPoint offset;
+	wxSize initialSize;
+	wxWindow* parent;
 
 	int size;
-	wxColor color;
+	wxColor fcolor;
+	wxColor bcolor;
+
+	MainFrame* mainframe = nullptr;
+
+	wxPanel* sizerKnob;
 
 	bool drawing;
+	bool active;
 
-	void OnPaint(wxPaintEvent& evt);
+	void OnPanelPaint(wxPaintEvent& evt);
+	void OnKnobPaint(wxPaintEvent& evt);
+	void OnPanelLeftDown(wxMouseEvent& evt);
+	void OnPanelLeftUp(wxMouseEvent& evt);
+	void OnPanelHover(wxMouseEvent& evt);
+	void OnKnobLeftDown(wxMouseEvent& evt);
+	void OnKnobLeftUp(wxMouseEvent& evt);
+	void OnPanelMotion(wxMouseEvent& evt);
+	void OnKnobMotion(wxMouseEvent& evt);
+	void OnKnobHover(wxMouseEvent& evt);
+	void ShortCuts(wxKeyEvent& evt);
 };
 

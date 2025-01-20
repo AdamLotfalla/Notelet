@@ -21,6 +21,7 @@
   <ItemGroup>
     <ClInclude Include="App.h" />
     <ClInclude Include="ColorDialog.h" />
+    <ClInclude Include="Cursors.h" />
     <ClInclude Include="MainFrame.h" />
     <ClInclude Include="Note.h" />
     <ClInclude Include="Rectangle.h" />
@@ -38,12 +39,19 @@
     <ClCompile Include="ToDoList.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <Image Include="Calign.ico" />
     <Image Include="ElipseDarkMode.ico" />
     <Image Include="ElipseWhiteMode.ico" />
+    <Image Include="Lalign.ico" />
     <Image Include="NoteDarkMode.ico" />
     <Image Include="NoteWhiteMode.ico" />
+    <Image Include="Ralign.ico" />
     <Image Include="RectangleDarkMode.ico" />
     <Image Include="RectangleWhiteMode.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="ClosedHand.cur" />
+    <None Include="OpenHand.cur" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>17.0</VCProjectVersion>

@@ -9,6 +9,8 @@
 #include "Note.h"
 #include "Tool.h"
 #include "Rectangle.h"
+#include <wx/richtext/richtextctrl.h>
+
 
 using namespace std;
 
@@ -21,13 +23,25 @@ struct MainFrame : public wxFrame
 	void switchTheme();
 	void UpdateColors();
 	void addScrolledPanel();
+	void addEditPanel(wxWindow* parent);
 
 	void SetActive(Note* activenote);
+	void UpdateTextInfo();
 
 	bool isDark;
 	bool isDrawingRect;
 	int noteDefaultPositionX;
 	int noteDefaultPositionY;
+
+	bool Bold = false;
+	bool Italic = false;
+	bool Underline = false;
+
+	bool Laligntoggle = true;
+	bool Raligntoggle = false;
+	bool Caligntoggle = false;
+
+	bool newFontSize = false;
 
 	int index;
 	int grandChildren;
@@ -38,8 +52,6 @@ struct MainFrame : public wxFrame
 
 	rectangle* drawnPanel;
 	//wxPanel* drawnPanel;
-
-	rectangle* lastRectangle;
 
 	bool m_isPanning;
 	wxPoint m_startScrollPos;
@@ -52,6 +64,7 @@ struct MainFrame : public wxFrame
 	Tool* ElipseTool;
 
 	Note* activeNote = nullptr;
+	rectangle* activeRectangle = nullptr;
 	bool occupied = false;
 
 	wxColor ForegroundColor;
@@ -62,17 +75,41 @@ struct MainFrame : public wxFrame
 	queue<wxWindow*> themeQueue2;
 
 	wxWrapSizer* colorWrapSizer;
+	wxBoxSizer* editPanelSizer;
 
 	wxSplitterWindow* sidePanelsSplitter;
+	wxSplitterWindow* editPanelSplitter;
 
 	wxPanel* notToolBarPanel;
 	wxPanel* colorPanel;
 	wxPanel* FcolorChoice;
 	wxPanel* BcolorChoice;
 	wxPanel* notSidePanel;
+	wxPanel* editPanel;
+	wxPanel* noteEditPanel;
+	wxPanel* textColorPreview;
+	wxPanel* sidePanel;
 	wxScrolledWindow* scrollPanel;
 
+	wxTextCtrl* textInput;
+	wxButton* addButton;
+	wxButton* updateButton;
+	wxToggleButton* boldButton;
+	wxToggleButton* italicButton;
+	wxToggleButton* underlineButton;
+	wxToggleButton* ToDoTab;
+	wxToggleButton* NoteEditTab;
+	wxBitmapButton* LeftAlignButton;
+	wxBitmapButton* RightAlignButton;
+	wxBitmapButton* CenterAlignButton;
+
+	wxRichTextCtrl* TextInput;
+
+	wxComboBox* FontSizeBox;
+
 	wxFont H2Font;
+
+	wxRichTextAttr attr;
 
 	wxRadioBox* ColorTypeRadioBox;
 
@@ -120,5 +157,15 @@ struct MainFrame : public wxFrame
 	void DrawRectangle(wxCommandEvent& evt);
 	void OnLeftDown(wxMouseEvent& evt);
 	void OnLeftUp(wxMouseEvent& evt);
-	void OnPaint(wxPaintEvent& evt);
+	void OnBoldClick(wxCommandEvent& evt);
+	void OnItalicClick(wxCommandEvent& evt);
+	void OnUnderlineClick(wxCommandEvent& evt);
+	void OnLeftAlignClick(wxCommandEvent& evt);
+	void OnCenterAlignClick(wxCommandEvent& evt);
+	void OnRightAlignClick(wxCommandEvent& evt);
+	void TextInputShortcuts(wxKeyEvent& evt);
+	void OnCaretClick(wxMouseEvent& evt);
+	void TextInputType(wxCommandEvent& evt);
+	void OnFontSizeSelect(wxCommandEvent& evt);
+	void OnAddButtonClick(wxCommandEvent& evt);
 };

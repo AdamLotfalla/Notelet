@@ -33,5 +33,6 @@ struct ColorDialog : public wxDialog
 	void WriteBoxes(wxCommandEvent& evt);
 	void AddButton(wxCommandEvent& evt);
 	void CancelButton(wxCommandEvent& evt);
+	void Shortcut(wxKeyEvent& evt);
 };
 
