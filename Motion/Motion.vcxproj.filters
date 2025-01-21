@@ -94,6 +94,18 @@
     <Image Include="Ralign.ico">
       <Filter>Resource Files</Filter>
     </Image>
+    <Image Include="BrushDarkMode.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="BrushWhiteMode.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="EraseDarkMode.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="EraseWhiteMode.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
   </ItemGroup>
   <ItemGroup>
     <None Include="ClosedHand.cur">

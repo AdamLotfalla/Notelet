@@ -39,9 +39,13 @@
     <ClCompile Include="ToDoList.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <Image Include="BrushDarkMode.ico" />
+    <Image Include="BrushWhiteMode.ico" />
     <Image Include="Calign.ico" />
     <Image Include="ElipseDarkMode.ico" />
     <Image Include="ElipseWhiteMode.ico" />
+    <Image Include="EraseDarkMode.ico" />
+    <Image Include="EraseWhiteMode.ico" />
     <Image Include="Lalign.ico" />
     <Image Include="NoteDarkMode.ico" />
     <Image Include="NoteWhiteMode.ico" />

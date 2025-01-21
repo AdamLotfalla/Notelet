@@ -16,6 +16,7 @@ rectangle::rectangle(wxWindow* PARENT, wxPoint STARTPOS, wxSize defaultSize, int
     this->SetDoubleBuffered(true);
 
     sizerKnob = new wxPanel(this, wxID_ANY, wxPoint(0, 0), wxSize(15, 15));
+    sizerKnob->SetBackgroundColour(wxColor(135, 135, 135));
     sizerKnob->Show(false);
     sizerKnob->Raise();
 
@@ -46,7 +47,8 @@ void rectangle::OnPanelPaint(wxPaintEvent& event)
     {
         // Define border properties
         double borderRadius = 2.0; // Radius for rounded corners
-        wxColour borderColor = fcolor;
+        //wxColour borderColor = fcolor;
+        wxColour borderColor = *wxBLACK;
         double borderWidth = size;
 
         // Get panel dimensions

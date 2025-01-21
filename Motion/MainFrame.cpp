@@ -153,6 +153,8 @@ void MainFrame::addScrolledPanel()
 	//scrollPanel->Bind(wxEVT_KEY_DOWN, &MainFrame::OnKeyDown, this);
 	//scrollPanel->Bind(wxEVT_KEY_UP, &MainFrame::OnKeyUp, this);
 	//scrollPanel->Bind(wxEVT_LEAVE_WINDOW, &MainFrame::OnLeaveWindow, this);
+
+	notSidePanel->Bind(wxEVT_PAINT, &MainFrame::Draw, this);
 }
 
 void MainFrame::addEditPanel(wxWindow* parent)
@@ -366,21 +368,17 @@ void MainFrame::switchTheme()
 	NoteTool->ChangeIcon(isDark ? "./NoteDarkMode.ico" : "./NoteWhiteMode.ico");
 	RectangleTool->ChangeIcon(isDark ? "./RectangleDarkMode.ico" : "./RectangleWhiteMode.ico");
 	ElipseTool->ChangeIcon(isDark ? "./ElipseDarkMode.ico" : "./ElipseWhiteMode.ico");
+	BrushTool->ChangeIcon(isDark ? "./BrushDarkMode.ico" : "./BrushWhiteMode.ico");
+	EraseTool->ChangeIcon(isDark ? "./EraseDarkMode.ico" : "./EraseWhiteMode.ico");
 
 	textColorPreview->SetBackgroundColour(ForegroundColor);
 	TextInput->SetBackgroundColour(*wxWHITE);
 	UpdateColors();
 
+	UpdateTextInfo();
+	UpdateToolInfo();
+
 	Refresh();
-
-	LeftAlignButton->SetBackgroundColour(Laligntoggle ? wxColor(135, 135, 135) : LeftAlignButton->GetParent()->GetBackgroundColour());
-	RightAlignButton->SetBackgroundColour(Raligntoggle ? wxColor(135, 135, 135) : RightAlignButton->GetParent()->GetBackgroundColour());
-	CenterAlignButton->SetBackgroundColour(Caligntoggle ? wxColor(135, 135, 135) : CenterAlignButton->GetParent()->GetBackgroundColour());
-
-	boldButton->SetBackgroundColour(Bold ? wxColor(135, 135, 135) : boldButton->GetParent()->GetBackgroundColour());
-	italicButton->SetBackgroundColour(Italic ? wxColor(135, 135, 135) : italicButton->GetParent()->GetBackgroundColour());
-	underlineButton->SetBackgroundColour(Underline ? wxColor(135, 135, 135) : underlineButton->GetParent()->GetBackgroundColour());
-
 }
 
 
@@ -460,6 +458,14 @@ void MainFrame::UpdateTextInfo()
 		editPanel->Refresh();
 	}
 	
+}
+
+void MainFrame::UpdateToolInfo()
+{
+	RectangleTool->SetBackgroundColour(isDrawingRect ? wxColor(135, 135, 135) : RectangleTool->GetParent()->GetBackgroundColour());
+	BrushTool->SetBackgroundColour(isBrushActive ? wxColor(135, 135, 135) : BrushTool->GetParent()->GetBackgroundColour());
+	EraseTool->SetBackgroundColour(isEraseActive? wxColor(135, 135, 135) : EraseTool->GetParent()->GetBackgroundColour());
+
 }
 
 
@@ -629,14 +635,20 @@ void MainFrame::addToolBar(wxWindow* parent)
 	NoteTool = new Tool(toolBarPanel, "Add a note \t Ctrl+N", isDark ? "./NoteDarkMode.ico" : "./NoteWhiteMode.ico");
 	RectangleTool = new Tool(toolBarPanel, "Draw a rectangle \t Ctrl+R", isDark ? "./RectangleDarkMode.ico" : "./RectangleWhiteMode.ico");
 	ElipseTool = new Tool(toolBarPanel, "Draw an Elipse \t Ctrl+E", isDark ? "./ElipseDarkMode.ico" : "./ElipseWhiteMode.ico");
+	BrushTool = new Tool(toolBarPanel, "Draw using the Brush", isDark ? "./BrushDarkMode.ico" : "./BrushWhiteMode.ico");
+	EraseTool = new Tool(toolBarPanel, "Erase strokes", isDark ? "./EraseDarkMode.ico" : "./EraseWhiteMode.ico");
 
 
 	toolSizer->Add(NoteTool, 0, wxEXPAND);
 	toolSizer->Add(RectangleTool, 0, wxEXPAND);
 	toolSizer->Add(ElipseTool, 0, wxEXPAND);
+	toolSizer->Add(BrushTool, 0, wxEXPAND);
+	toolSizer->Add(EraseTool, 0, wxEXPAND);
 
 	NoteTool->Bind(wxEVT_TOGGLEBUTTON, &MainFrame::AddNote, this);
 	RectangleTool->Bind(wxEVT_TOGGLEBUTTON, &MainFrame::DrawRectangle, this);
+	BrushTool->Bind(wxEVT_TOGGLEBUTTON, &MainFrame::ActivateBrushTool, this);
+	EraseTool->Bind(wxEVT_TOGGLEBUTTON, &MainFrame::ActivateEraseTool, this);
 
 	toolBarPanel->SetSizerAndFit(toolSizer);
 
@@ -651,16 +663,51 @@ void MainFrame::AddNote(wxCommandEvent& evt)
 	noteDefaultPositionX = scrollPanel->GetScrollPos(wxHORIZONTAL) + offset;
 	noteDefaultPositionY = scrollPanel->GetScrollPos(wxVERTICAL) + offset;
 
-	Note* note = new Note(150, 150, 0, noteDefaultPositionX, noteDefaultPositionY, TextInput->GetLabel(), font, ForegroundColor, BackgroundColor, notSidePanel, this);
+	Note* note = new Note(550, 150, 0, noteDefaultPositionX, noteDefaultPositionY, TextInput, font, ForegroundColor, BackgroundColor, notSidePanel, this);
+
+	TextInput->SelectAll();
 
 	note->Raise();
+
+	isDrawingRect = false;
+	isBrushActive = false;
+	isEraseActive = false;
+
+	UpdateToolInfo();
 }
 
 void MainFrame::DrawRectangle(wxCommandEvent& evt)
 {
-	isDrawingRect = true;
+	isDrawingRect = !isDrawingRect;
+	isBrushActive = false;
+	isEraseActive = false;
+
 	wxLogStatus("DrawingRectangle");
 	SetCursor(wxCURSOR_CROSS);
+
+
+	UpdateToolInfo();
+}
+
+void MainFrame::ActivateBrushTool(wxCommandEvent& evt)
+{
+	isBrushActive = !isBrushActive;
+	isDrawingRect = false;
+	isEraseActive = false;
+
+	//SetCursor(wxCURSOR_SPRAYCAN);
+
+
+	UpdateToolInfo();
+}
+
+void MainFrame::ActivateEraseTool(wxCommandEvent& evt)
+{
+	isEraseActive = !isEraseActive;
+	isDrawingRect = false;
+	isBrushActive = false;
+
+	UpdateToolInfo();
 }
 
 
@@ -668,7 +715,9 @@ void MainFrame::DrawRectangle(wxCommandEvent& evt)
 // tool gestures
 void MainFrame::OnRightDown(wxMouseEvent& evt)
 {
-	notSidePanel->CaptureMouse();
+	if (!notSidePanel->HasCapture()) {
+		notSidePanel->CaptureMouse();
+	}
 	m_isPanning = true;
 	endPos = wxGetMousePosition();
 	m_scrollOffset = scrollPanel->GetViewStart(); // Get current scroll position in logical units
@@ -689,7 +738,10 @@ void MainFrame::OnLeftDown(wxMouseEvent& evt)
 	startPos = evt.GetPosition();
 
 	if (isDrawingRect) {
-		notSidePanel->CaptureMouse();
+
+		if (!notSidePanel->HasCapture()) {
+			notSidePanel->CaptureMouse();
+		}
 
 		bufferPoint = startPos;
 
@@ -706,11 +758,25 @@ void MainFrame::OnLeftDown(wxMouseEvent& evt)
 		wxLogStatus("LeftDown, rectangle drawn at (%i,%i)", drawnPanel->GetPosition().x, drawnPanel->GetPosition().y);
 	}
 
-	Refresh();
+	if (isBrushActive) {
+		if (!notSidePanel->HasCapture()) {
+			notSidePanel->CaptureMouse();
+		}
+
+		brushSize = 5;
+		vector<wxPoint> startingvector;
+		startingvector.push_back(startPos);
+		strokes.push_back({ {brushSize, ForegroundColor}, startingvector});
+	}
+	wxLogStatus("down");
+	//notSidePanel->Refresh();
+	notSidePanel->SetDoubleBuffered(true);
 }
 
 void MainFrame::OnRightUp(wxMouseEvent& evt) {
-	notSidePanel->ReleaseMouse();
+	if (notSidePanel->HasCapture()) {
+		notSidePanel->ReleaseMouse();
+	}
 	m_isPanning = false;
 	SetCursor(wxCURSOR_DEFAULT);
 }
@@ -718,7 +784,9 @@ void MainFrame::OnRightUp(wxMouseEvent& evt) {
 void MainFrame::OnLeftUp(wxMouseEvent& evt)
 {
 	if (isDrawingRect && activeRectangle != nullptr) { 
-		notSidePanel->ReleaseMouse(); 
+		if (notSidePanel->HasCapture()) {
+			notSidePanel->ReleaseMouse();
+		}
 		int sizeX = std::max(drawnPanel->GetSize().x, 25);
 		int sizeY = std::max(drawnPanel->GetSize().y, 25);
 
@@ -729,8 +797,18 @@ void MainFrame::OnLeftUp(wxMouseEvent& evt)
 		wxLogStatus("drawn panel (%i,%i)", drawnPanel->GetPosition().x, drawnPanel->GetPosition().y);
 	}
 
+	if (isBrushActive) {
+		if (notSidePanel->HasCapture()) {
+			notSidePanel->ReleaseMouse();
+		}
+
+		int LastStrokeIndex = strokes.size();
+
+		wxLogStatus("Refreshed, number of circles: %i", int(strokes[LastStrokeIndex - 1].second.size()));
+	}
+
 	isDrawingRect = false;
-	Refresh();
+	notSidePanel->Refresh();
 	SetCursor(wxCURSOR_DEFAULT);
 }
 
@@ -1142,11 +1220,41 @@ void MainFrame::OnAddButtonClick(wxCommandEvent& evt)
 	AddNote(dummyEvent);
 }
 
+void MainFrame::Draw(wxPaintEvent& evt) {
+	wxPaintDC dc(notSidePanel);
+	wxGraphicsContext* gc = wxGraphicsContext::Create(dc);
+	if (!gc) return;
+
+	gc->SetAntialiasMode(wxANTIALIAS_DEFAULT);
+
+	for (const auto& stroke : strokes) {
+		gc->SetPen(wxPen(stroke.first.second, stroke.first.first));
+		gc->SetBrush(*wxRED_BRUSH);
+
+		if (stroke.second.size() < 2) continue;
+
+		wxGraphicsPath path = gc->CreatePath();
+		path.MoveToPoint(stroke.second[0].x, stroke.second[0].y);
+
+		for (size_t i = 1; i < stroke.second.size() - 1; i++) {
+			wxPoint mid = (stroke.second[i] + stroke.second[i + 1]) / 2;
+			path.AddQuadCurveToPoint(
+				stroke.second[i].x, stroke.second[i].y, // Control point
+				mid.x, mid.y                             // End point
+			);
+		}
+
+		path.AddLineToPoint(stroke.second.back().x, stroke.second.back().y);
+		gc->StrokePath(path);
+	}
+
+	delete gc;
+}
+
 void MainFrame::OnMouseMotion(wxMouseEvent& evt) {
 	if (m_isPanning && evt.Dragging() && evt.RightIsDown()) {
 		wxPoint delta = wxGetMousePosition() - endPos;
 		wxPoint scrollCord = wxPoint(scrollPanel->GetScrollPos(wxHORIZONTAL), scrollPanel->GetScrollPos(wxVERTICAL));
-
 		scrollPanel->Scroll(scrollCord - delta);
 	}
 	endPos = wxGetMousePosition();
@@ -1166,7 +1274,53 @@ void MainFrame::OnMouseMotion(wxMouseEvent& evt) {
 
 		drawnPanel->SetSize(abs((endPos - startPos).x), abs((endPos - startPos).y));
 
-		Refresh();
+		drawnPanel->Refresh(); // Refresh only the drawn panel
+	}
+
+	if (isBrushActive && evt.LeftIsDown()) {
+		wxPoint mousePos = evt.GetPosition();
+		strokes.back().second.push_back(mousePos);
+		wxLogStatus("Drawing");
+
+		// Get the last two points and refresh only the affected area
+		if (strokes.back().second.size() > 1) {
+			wxPoint lastPoint = strokes.back().second[strokes.back().second.size() - 2];
+			wxPoint newPoint = strokes.back().second.back();
+
+			wxRect updateRegion = wxRect(lastPoint, newPoint);
+			updateRegion.Inflate(brushSize + 2); // Expand to include brush size
+
+			notSidePanel->RefreshRect(updateRegion);
+		}
+	}
+
+	wxPoint mousePos = evt.GetPosition();
+
+	if (isEraseActive && evt.LeftIsDown()) {
+		float eraseRadius = 10.0f; // Adjust eraser sensitivity
+		wxRect eraseBounds(mousePos.x - eraseRadius, mousePos.y - eraseRadius,
+			eraseRadius * 2, eraseRadius * 2);
+		bool erasedSomething = false;
+
+		strokes.erase(std::remove_if(strokes.begin(), strokes.end(),
+			[&](const auto& stroke) {
+				for (const wxPoint& point : stroke.second) {
+					if (std::hypot(mousePos.x - point.x, mousePos.y - point.y) < eraseRadius) {
+						eraseBounds.Union(wxRect(point, wxSize(1, 1))); // Expand erase region
+						erasedSomething = true;
+						return true; // Mark stroke for removal
+					}
+				}
+				return false; // Keep stroke
+			}),
+			strokes.end()
+		);
+
+		// Only refresh the affected area if something was erased
+		if (erasedSomething) {
+			eraseBounds.Inflate(1000); // Slightly expand the region for better clearing
+			notSidePanel->RefreshRect(eraseBounds);
+		}
 	}
 
 	evt.Skip();

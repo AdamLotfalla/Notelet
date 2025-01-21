@@ -27,9 +27,12 @@ struct MainFrame : public wxFrame
 
 	void SetActive(Note* activenote);
 	void UpdateTextInfo();
+	void UpdateToolInfo();
 
 	bool isDark;
-	bool isDrawingRect;
+	bool isDrawingRect = false;
+	bool isBrushActive = false;
+	bool isEraseActive = false;
 	int noteDefaultPositionX;
 	int noteDefaultPositionY;
 
@@ -45,6 +48,7 @@ struct MainFrame : public wxFrame
 
 	int index;
 	int grandChildren;
+	int brushSize;
 	bool hasGrandChildren;
 	wxPoint startPos;
 	wxPoint endPos;
@@ -62,6 +66,8 @@ struct MainFrame : public wxFrame
 	Tool* NoteTool;
 	Tool* RectangleTool;
 	Tool* ElipseTool;
+	Tool* BrushTool;
+	Tool* EraseTool;
 
 	Note* activeNote = nullptr;
 	rectangle* activeRectangle = nullptr;
@@ -114,7 +120,7 @@ struct MainFrame : public wxFrame
 	wxRadioBox* ColorTypeRadioBox;
 
 	MainFrame(const wxString& title);
-	std::vector<std::string> paletteColors = {
+	vector<std::string> paletteColors = {
 		// Black and White
 		"#000000",  // Black
 		"#FFFFFF",  // White
@@ -144,7 +150,8 @@ struct MainFrame : public wxFrame
 		"#FFDB58", // Mustard Yellow
 		"#2f2f2f"  // Dark Charcoal
 	};
-	std::vector<wxPanel*> paletteSwatches;
+	vector<wxPanel*> paletteSwatches;
+	vector<pair< pair<int, wxColor> , vector<wxPoint> >> strokes;
 
 	void SwitchThemeButton(wxCommandEvent& evt);
 	void OnSwatchHover(wxMouseEvent& evt);
@@ -155,6 +162,9 @@ struct MainFrame : public wxFrame
 	void OnRightUp(wxMouseEvent& evt);
 	void OnMouseMotion(wxMouseEvent& evt);
 	void DrawRectangle(wxCommandEvent& evt);
+	void ActivateBrushTool(wxCommandEvent& evt);
+	void ActivateEraseTool(wxCommandEvent& evt);
+
 	void OnLeftDown(wxMouseEvent& evt);
 	void OnLeftUp(wxMouseEvent& evt);
 	void OnBoldClick(wxCommandEvent& evt);
@@ -168,4 +178,5 @@ struct MainFrame : public wxFrame
 	void TextInputType(wxCommandEvent& evt);
 	void OnFontSizeSelect(wxCommandEvent& evt);
 	void OnAddButtonClick(wxCommandEvent& evt);
+	void Draw(wxPaintEvent& evt);
 };

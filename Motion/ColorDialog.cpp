@@ -47,7 +47,7 @@ ColorDialog::ColorDialog(wxWindow* parent, wxString title, MainFrame* frame)
     // Add text fields to horizontal sizer
     horizontalSizer->Add(RH, 1, wxEXPAND | wxRIGHT, 3);
     horizontalSizer->Add(GS, 1, wxEXPAND | wxRIGHT, 3);
-    horizontalSizer->Add(BL, 1, wxEXPAND | wxRIGHT, 3);
+    horizontalSizer->Add(BL, 1, wxEXPAND, 3);
 
     // Add Hex field
     verticalSizer->Add(Hex, 0, wxEXPAND | wxTOP | wxBOTTOM, 5);
@@ -80,8 +80,8 @@ ColorDialog::ColorDialog(wxWindow* parent, wxString title, MainFrame* frame)
 
     // Layout components
     RH->SetFocus();
-    Refresh();
     colorPreview->SetBackgroundColour("#a7a7a7");
+    Refresh();
     this->Layout();
 }
 

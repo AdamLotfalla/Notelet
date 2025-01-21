@@ -3,18 +3,19 @@
 #include <string>
 #include <wx/object.h>
 #include <wx/richtext/richtextctrl.h>
+#include "Rectangle.h"
 
 class MainFrame;
 
-class Note : public wxPanel {
+class Note : public rectangle {
 public:
     int width, height, rotation, x_pos, y_pos;
     wxString text;
     wxColor fcolor, bcolor;
     wxPanel* stickynote;
     wxGridSizer* sizer;
-    wxStaticText* textContent;
-    //wxRichTextCtrl* textContent;
+    //wxStaticText* textContent;
+    wxRichTextCtrl* textContent;
     bool mHover;
     bool mHold;
     bool isActive;
@@ -30,7 +31,7 @@ public:
 
 
     // Constructor declaration only
-    Note(int WIDTH, int HEIGHT, int ROTATION, int X_POS, int Y_POS, wxString TEXT, wxFont FONT, wxColor FCOLOR, wxColor BCOLOR, wxWindow* PARENT, MainFrame* frame);
+    Note(int WIDTH, int HEIGHT, int ROTATION, int X_POS, int Y_POS, wxRichTextCtrl* SOURCE, wxFont FONT, wxColor FCOLOR, wxColor BCOLOR, wxWindow* PARENT, MainFrame* frame);
 
     void UpdateNote(int newWidth, int newHeight, wxString newText, wxFont newFont, wxColor newFcolor, wxColor newBcolor);
 
@@ -40,4 +41,6 @@ public:
     void OnMouseMove(wxMouseEvent& evt);
     void OnLeftMouseUp(wxMouseEvent& evt);
     void Shortcuts(wxKeyEvent& evt);
+
+    void OnResize(wxCommandEvent& evt);
 };
