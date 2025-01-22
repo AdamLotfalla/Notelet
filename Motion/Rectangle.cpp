@@ -34,6 +34,7 @@ rectangle::rectangle(wxWindow* PARENT, wxPoint STARTPOS, wxSize defaultSize, int
     //sizerKnob->Bind(wxEVT_PAINT, &rectangle::OnKnobPaint, this);
 
     this->SetDoubleBuffered(true);
+    sizerKnob->SetPosition(wxPoint(this->GetSize().GetWidth() - 15, this->GetSize().GetHeight() - 15));
 }
 
 void rectangle::OnPanelPaint(wxPaintEvent& event)
@@ -69,7 +70,7 @@ void rectangle::OnPanelLeftDown(wxMouseEvent& evt)
 {
     if (mainframe->activeRectangle != nullptr) { mainframe->activeRectangle->sizerKnob->Show(false); }
     mainframe->activeRectangle = this;
-    mainframe->activeNote = nullptr;
+    //mainframe->activeNote = nullptr;
     active = true;
 
     SetCursor(wxCURSOR_CLOSED_HAND);
@@ -107,7 +108,9 @@ void rectangle::OnPanelMotion(wxMouseEvent& evt)
     if (evt.LeftIsDown() && evt.Dragging()) {
         SetCursor(wxCURSOR_CLOSED_HAND);
         auto mPos = wxGetMousePosition();
-        mainframe->activeRectangle->SetPosition(mPos - offset);
+        if (mainframe->activeRectangle != nullptr) {
+            mainframe->activeRectangle->SetPosition(mPos - offset);
+        }
     }
 }
 

@@ -15,9 +15,14 @@ struct Tool : wxBitmapToggleButton
 		//Bitmap.Rescale(Bitmap, wxSize(24, 24));
 		//this->SetBitmap(Bitmap);
 		this->SetBackgroundColour(parent->GetBackgroundColour());
+		this->Bind(wxEVT_ENTER_WINDOW, &Tool::OnHover, this);
 
 
 		Refresh();
+	}
+
+	void OnHover(wxMouseEvent& evt) {
+		SetCursor(wxCURSOR_OPEN_HAND);
 	}
 
 	void ChangeIcon(wxString NEWPATH) {

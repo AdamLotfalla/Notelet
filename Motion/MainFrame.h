@@ -10,6 +10,7 @@
 #include "Tool.h"
 #include "Rectangle.h"
 #include <wx/richtext/richtextctrl.h>
+#include "Stroke.h"
 
 
 using namespace std;
@@ -23,9 +24,11 @@ struct MainFrame : public wxFrame
 	void switchTheme();
 	void UpdateColors();
 	void addScrolledPanel();
+	void UpdateBrushes();
+	bool XSbrushActive, SbrushActive, MbrushActive, LbrushActive, XLbrushActive, showBrushes;
 	void addEditPanel(wxWindow* parent);
 
-	void SetActive(Note* activenote);
+	//void SetActive(Note* ACTIVENOTE);
 	void UpdateTextInfo();
 	void UpdateToolInfo();
 
@@ -35,6 +38,7 @@ struct MainFrame : public wxFrame
 	bool isEraseActive = false;
 	int noteDefaultPositionX;
 	int noteDefaultPositionY;
+	int todoCount = 0;
 
 	bool Bold = false;
 	bool Italic = false;
@@ -54,6 +58,8 @@ struct MainFrame : public wxFrame
 	wxPoint endPos;
 	wxPoint bufferPoint;
 
+	wxPanel* toolBarPanel;
+
 	rectangle* drawnPanel;
 	//wxPanel* drawnPanel;
 
@@ -68,6 +74,13 @@ struct MainFrame : public wxFrame
 	Tool* ElipseTool;
 	Tool* BrushTool;
 	Tool* EraseTool;
+	Tool* ToDoTool;
+
+	Tool* XSbrush;
+	Tool* Sbrush;
+	Tool* Mbrush;
+	Tool* Lbrush;
+	Tool* XLbrush;
 
 	Note* activeNote = nullptr;
 	rectangle* activeRectangle = nullptr;
@@ -151,13 +164,15 @@ struct MainFrame : public wxFrame
 		"#2f2f2f"  // Dark Charcoal
 	};
 	vector<wxPanel*> paletteSwatches;
-	vector<pair< pair<int, wxColor> , vector<wxPoint> >> strokes;
+	//vector<pair< pair<int, wxColor> , vector<wxPoint> >> strokes;
+	vector<Stroke> strokes;
 
 	void SwitchThemeButton(wxCommandEvent& evt);
 	void OnSwatchHover(wxMouseEvent& evt);
 	void OnSwatchSelect(wxMouseEvent& evt);
 	void AddNewColor(wxCommandEvent& evt);
 	void AddNote(wxCommandEvent& evt);
+	void AddToDo(wxCommandEvent& evt);
 	void OnRightDown(wxMouseEvent& evt);
 	void OnRightUp(wxMouseEvent& evt);
 	void OnMouseMotion(wxMouseEvent& evt);
@@ -179,4 +194,12 @@ struct MainFrame : public wxFrame
 	void OnFontSizeSelect(wxCommandEvent& evt);
 	void OnAddButtonClick(wxCommandEvent& evt);
 	void Draw(wxPaintEvent& evt);
+	void OnUpdateButtonClick(wxCommandEvent& evt);
+
+	//brushes
+	void XSbrushEvent(wxCommandEvent& evt);
+	void SbrushEvent(wxCommandEvent& evt);
+	void MbrushEvent(wxCommandEvent& evt);
+	void LbrushEvent(wxCommandEvent& evt);
+	void XLbrushEvent(wxCommandEvent& evt);
 };

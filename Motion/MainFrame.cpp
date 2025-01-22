@@ -14,6 +14,7 @@
 #include <wx/graphics.h>
 #include "Cursors.h"
 #include <wx/app.h>
+#include "ToDoList.h"
 
 using namespace std;
 
@@ -40,9 +41,6 @@ MainFrame::MainFrame(const wxString& title) : wxFrame(nullptr, wxID_ANY, title) 
 	this->SetDoubleBuffered(true);
 	//Bind(wxEVT_KEY_DOWN, &MainFrame::Shortcuts, this);
 
-	isDark = !isDark;
-	wxCommandEvent dummyEvent(wxEVT_BUTTON, wxID_ANY);
-	SwitchThemeButton(dummyEvent);
 
 	noteDefaultPositionX = scrollPanel->GetPosition().x;
 	noteDefaultPositionY = scrollPanel->GetPosition().y;
@@ -55,8 +53,17 @@ MainFrame::MainFrame(const wxString& title) : wxFrame(nullptr, wxID_ANY, title) 
 	attr = TextInput->GetDefaultStyle();
 	TextInput->SetDefaultStyle(attr);
 
+	MbrushActive = true;
+	brushSize = 3;
+
+	TextInput->WriteText(" ");
+	UpdateTextInfo();
 	TextInput->SelectAll();
 	TextInput->DeleteSelection();
+
+	isDark = !isDark;
+	wxCommandEvent dummyEvent(wxEVT_BUTTON, wxID_ANY);
+	SwitchThemeButton(dummyEvent);
 }
 
 
@@ -159,25 +166,19 @@ void MainFrame::addScrolledPanel()
 
 void MainFrame::addEditPanel(wxWindow* parent)
 {
-	wxBoxSizer* tabsSizer = new wxBoxSizer(wxHORIZONTAL);
 	wxBoxSizer* noteEditSizer = new wxBoxSizer(wxVERTICAL);
 	wxBoxSizer* SecondRowButtonSizer = new wxBoxSizer(wxHORIZONTAL);
 	wxBoxSizer* FirstRowButtonSizer = new wxBoxSizer(wxHORIZONTAL);
 	
-	ToDoTab = new wxToggleButton(parent, wxID_ANY, "To-Do List", wxDefaultPosition, wxSize(-1, 25));
-	NoteEditTab = new wxToggleButton(parent, wxID_ANY, "Options", wxDefaultPosition, wxSize(-1,25));
 	TextInput = new wxRichTextCtrl(parent, wxID_ANY, "");
 
 	//TextInput->SetHint("Enter Note message");
-
-	tabsSizer->Add(ToDoTab, 1, wxEXPAND);
-	tabsSizer->Add(NoteEditTab, 1, wxEXPAND);
 
 	addButton = new wxButton(parent, wxID_ANY, "+");
 	addButton->SetToolTip("Add a new note \t CTRL+N");
 
 	updateButton = new wxButton(parent, wxID_ANY, "Update");
-	updateButton->SetToolTip("UpdateSelectedNote \t CTRL+u");
+	updateButton->SetToolTip("UpdateSelectedNote \t Ctrl+U");
 
 	boldButton = new wxToggleButton(parent, wxID_ANY, "B", wxDefaultPosition, wxSize(25,25), wxNO_BORDER);
 	boldButton->SetToolTip("Make Bold");
@@ -235,7 +236,6 @@ void MainFrame::addEditPanel(wxWindow* parent)
 	textColorPreview = new wxPanel(parent, wxID_ANY, wxDefaultPosition, wxSize(-1, 25), wxBORDER_SIMPLE);
 	textColorPreview->SetToolTip("Text color\n the same as the foreground color");
 
-	noteEditSizer->Add(tabsSizer, 0, wxEXPAND);
 	noteEditSizer->AddSpacer(5);
 	noteEditSizer->Add(FirstRowButtonSizer, 0, wxEXPAND | wxRIGHT | wxLEFT, 5);
 	noteEditSizer->Add(SecondRowButtonSizer, 0, wxEXPAND | wxRIGHT | wxLEFT, 5);
@@ -276,6 +276,7 @@ void MainFrame::addEditPanel(wxWindow* parent)
 	TextInput->Bind(wxEVT_TEXT, &MainFrame::TextInputType, this);
 
 	addButton->Bind(wxEVT_BUTTON, &MainFrame::OnAddButtonClick, this);
+	updateButton->Bind(wxEVT_BUTTON, &MainFrame::OnUpdateButtonClick, this);
 }
 
 
@@ -293,6 +294,36 @@ void MainFrame::SwitchThemeButton(wxCommandEvent& evt)
 	hasGrandChildren = false;
 
 	switchTheme();
+}
+
+void MainFrame::UpdateBrushes()
+{
+	XSbrush->SetBackgroundColour(XSbrushActive ? wxColor(135, 135, 135) : XSbrush->GetParent()->GetBackgroundColour());
+	Sbrush->SetBackgroundColour(SbrushActive ? wxColor(135, 135, 135) : Sbrush->GetParent()->GetBackgroundColour());
+	Mbrush->SetBackgroundColour(MbrushActive ? wxColor(135, 135, 135) : Mbrush->GetParent()->GetBackgroundColour());
+	Lbrush->SetBackgroundColour(LbrushActive ? wxColor(135, 135, 135) : Lbrush->GetParent()->GetBackgroundColour());
+	XLbrush->SetBackgroundColour(XLbrushActive ? wxColor(135, 135, 135) : XLbrush->GetParent()->GetBackgroundColour());
+
+	XSbrush->ChangeIcon(isDark ? "./XSbrushDarkMode.ico" : "./XSbrushWhiteMode.ico");
+	Sbrush->ChangeIcon(isDark ? "./SbrushDarkMode.ico" : "./SbrushWhiteMode.ico");
+	Mbrush->ChangeIcon(isDark ? "./MbrushDarkMode.ico" : "./MbrushWhiteMode.ico");
+	Lbrush->ChangeIcon(isDark ? "./LbrushDarkMode.ico" : "./LbrushWhiteMode.ico");
+	XLbrush->ChangeIcon(isDark ? "./XLbrushDarkMode.ico" : "./XLbrushWhiteMode.ico");
+
+	XSbrush->Refresh();
+	Sbrush->Refresh();
+	Mbrush->Refresh();
+	Lbrush->Refresh();
+	XLbrush->Refresh();
+
+	XSbrush->Show(showBrushes);
+	Sbrush->Show(showBrushes);
+	Mbrush->Show(showBrushes);
+	Lbrush->Show(showBrushes);
+	XLbrush->Show(showBrushes);
+
+	toolBarPanel->Refresh();
+	toolBarPanel->Layout();
 }
 
 void MainFrame::switchTheme()
@@ -366,6 +397,7 @@ void MainFrame::switchTheme()
 	BcolorChoice->SetBackgroundColour(BackgroundColor);
 
 	NoteTool->ChangeIcon(isDark ? "./NoteDarkMode.ico" : "./NoteWhiteMode.ico");
+	ToDoTool->ChangeIcon(isDark ? "./ToDoDarkMode.ico" : "./ToDoWhiteMode.ico");
 	RectangleTool->ChangeIcon(isDark ? "./RectangleDarkMode.ico" : "./RectangleWhiteMode.ico");
 	ElipseTool->ChangeIcon(isDark ? "./ElipseDarkMode.ico" : "./ElipseWhiteMode.ico");
 	BrushTool->ChangeIcon(isDark ? "./BrushDarkMode.ico" : "./BrushWhiteMode.ico");
@@ -377,6 +409,7 @@ void MainFrame::switchTheme()
 
 	UpdateTextInfo();
 	UpdateToolInfo();
+	UpdateBrushes();
 
 	Refresh();
 }
@@ -385,23 +418,23 @@ void MainFrame::switchTheme()
 
 
 // note controls
-void MainFrame::SetActive(Note* activenote) {
-	if (activenote == nullptr) {
-		wxLogStatus("Attempting to set active note to nullptr.");
-		return;
-	}
-	activeNote = activenote;
-	//noteEnterText->SetLabel(activeNote->text);
-	//noteEnterText->SelectAll();
-	wxLogStatus("Active ID: %i", activeNote->GetId());
-}
+//void MainFrame::SetActive(Note* ACTIVENOTE) {
+//	if (ACTIVENOTE == nullptr) {
+//		wxLogStatus("Attempting to set active note to nullptr.");
+//		return;
+//	}
+//	activeNote = ACTIVENOTE;
+//	//noteEnterText->SetLabel(activeNote->text);
+//	//noteEnterText->SelectAll();
+//	wxLogStatus("Active ID: %i", activeNote->GetId());
+//}
 
 void MainFrame::UpdateTextInfo()
 {
 	long caretPos = TextInput->GetCaretPosition();
 	wxRichTextAttr style;
-	if (TextInput->GetStyle(caretPos + 1, style)) { // Get the style before the caret
-		attr = style;
+	if (TextInput->GetStyle(caretPos, style)) { // Get the style before the caret
+		//attr = style;
 
 		switch (style.GetAlignment())
 		{
@@ -437,26 +470,35 @@ void MainFrame::UpdateTextInfo()
 		italicButton->SetBackgroundColour(style.GetFontStyle() == wxFONTSTYLE_ITALIC ? wxColor(135, 135, 135): italicButton->GetParent()->GetBackgroundColour());
 		underlineButton->SetBackgroundColour(style.GetFontUnderlined() ? wxColor(135, 135, 135): underlineButton->GetParent()->GetBackgroundColour());
 		
-
+		
 		textColorPreview->SetBackgroundColour(style.GetTextColour());
 		
-		TextInput->GetStyle(caretPos + 1, style);
+		//TextInput->GetStyle(caretPos + 1, style);
 		//wxLogStatus("Caret Position: %i, Font size: %i, IDK: %i", caretPos, style.GetFontSize(), style);
-
+		
 		if (!newFontSize) { 
 			FontSizeBox->SetValue(to_string(style.GetFontSize())); 
 		}
 		else {
 			newFontSize = false;
 		}
-
-		//attr.SetFontSize(atol(FontSizeBox->GetValue()));
+		
+		
 		//TextInput->SetDefaultStyle(attr);
-		FontSizeBox->Refresh();
-		FontSizeBox->Update();
-		//textColorPreview->Refresh();
-		editPanel->Refresh();
 	}
+	//attr.SetFontSize(atol(FontSizeBox->GetValue()));
+	FontSizeBox->Refresh();
+	FontSizeBox->Update();
+	//textColorPreview->Refresh();
+	editPanel->Refresh();
+
+	boldButton->Refresh();
+	italicButton->Refresh();
+	underlineButton->Refresh();
+	textColorPreview->Refresh();
+	LeftAlignButton->Refresh();
+	RightAlignButton->Refresh();
+	CenterAlignButton->Refresh();
 	
 }
 
@@ -615,7 +657,7 @@ void MainFrame::UpdateColors()
 void MainFrame::addToolBar(wxWindow* parent)
 {
 	//objects
-	wxPanel* toolBarPanel = new wxPanel(parent, wxID_ANY, wxDefaultPosition, wxSize(-1, 30));
+	toolBarPanel = new wxPanel(parent, wxID_ANY, wxDefaultPosition, wxSize(-1, 30));
 	notToolBarPanel = new wxPanel(parent);
 
 	wxBoxSizer* toolBarSizer = new wxBoxSizer(wxVERTICAL);
@@ -633,37 +675,60 @@ void MainFrame::addToolBar(wxWindow* parent)
 
 	//Tools
 	NoteTool = new Tool(toolBarPanel, "Add a note \t Ctrl+N", isDark ? "./NoteDarkMode.ico" : "./NoteWhiteMode.ico");
+	ToDoTool = new Tool(toolBarPanel, "Add a To-Do list \t Ctrl+T", isDark ? "./ToDoDarkMode.ico" : "./ToDoWhiteMode.ico");
 	RectangleTool = new Tool(toolBarPanel, "Draw a rectangle \t Ctrl+R", isDark ? "./RectangleDarkMode.ico" : "./RectangleWhiteMode.ico");
 	ElipseTool = new Tool(toolBarPanel, "Draw an Elipse \t Ctrl+E", isDark ? "./ElipseDarkMode.ico" : "./ElipseWhiteMode.ico");
 	BrushTool = new Tool(toolBarPanel, "Draw using the Brush", isDark ? "./BrushDarkMode.ico" : "./BrushWhiteMode.ico");
 	EraseTool = new Tool(toolBarPanel, "Erase strokes", isDark ? "./EraseDarkMode.ico" : "./EraseWhiteMode.ico");
 
+	XSbrush = new Tool(toolBarPanel, "1px brush nib", isDark ? "./XSbrushDarkMode.ico" : "./XSbrushWhiteMode.ico");
+	Sbrush = new Tool(toolBarPanel, "2px brush nib", isDark ? "./SbrushDarkMode.ico" : "./SbrushWhiteMode.ico");
+	Mbrush = new Tool(toolBarPanel, "3px brush nib", isDark ? "./MbrushDarkMode.ico" : "./MbrushWhiteMode.ico");
+	Lbrush = new Tool(toolBarPanel, "5px brush nib", isDark ? "./LbrushDarkMode.ico" : "./LbrushWhiteMode.ico");
+	XLbrush = new Tool(toolBarPanel, "10px brush nib", isDark ? "./XLbrushDarkMode.ico" : "./XLbrushWhiteMode.ico");
+
 
 	toolSizer->Add(NoteTool, 0, wxEXPAND);
+	toolSizer->Add(ToDoTool, 0, wxEXPAND);
 	toolSizer->Add(RectangleTool, 0, wxEXPAND);
 	toolSizer->Add(ElipseTool, 0, wxEXPAND);
 	toolSizer->Add(BrushTool, 0, wxEXPAND);
 	toolSizer->Add(EraseTool, 0, wxEXPAND);
+	toolSizer->AddStretchSpacer();
+	toolSizer->Add(XSbrush, 0, wxEXPAND);
+	toolSizer->Add(Sbrush, 0, wxEXPAND);
+	toolSizer->Add(Mbrush, 0, wxEXPAND);
+	toolSizer->Add(Lbrush, 0, wxEXPAND);
+	toolSizer->Add(XLbrush, 0, wxEXPAND);
+	toolSizer->AddSpacer(50);
+
+
 
 	NoteTool->Bind(wxEVT_TOGGLEBUTTON, &MainFrame::AddNote, this);
+	ToDoTool->Bind(wxEVT_TOGGLEBUTTON, &MainFrame::AddToDo, this);
 	RectangleTool->Bind(wxEVT_TOGGLEBUTTON, &MainFrame::DrawRectangle, this);
 	BrushTool->Bind(wxEVT_TOGGLEBUTTON, &MainFrame::ActivateBrushTool, this);
 	EraseTool->Bind(wxEVT_TOGGLEBUTTON, &MainFrame::ActivateEraseTool, this);
 
-	toolBarPanel->SetSizerAndFit(toolSizer);
+	XSbrush->Bind(wxEVT_TOGGLEBUTTON, &MainFrame::XSbrushEvent, this);
+	Sbrush->Bind(wxEVT_TOGGLEBUTTON, &MainFrame::SbrushEvent, this);
+	Mbrush->Bind(wxEVT_TOGGLEBUTTON, &MainFrame::MbrushEvent, this);
+	Lbrush->Bind(wxEVT_TOGGLEBUTTON, &MainFrame::LbrushEvent, this);
+	XLbrush->Bind(wxEVT_TOGGLEBUTTON, &MainFrame::XLbrushEvent, this);
 
+	toolBarPanel->SetSizerAndFit(toolSizer);
+	this->Layout();
 	isDrawingRect = false;
 }
 
 void MainFrame::AddNote(wxCommandEvent& evt)
 {
-	wxFont font;
 	int offset = 200;
 
 	noteDefaultPositionX = scrollPanel->GetScrollPos(wxHORIZONTAL) + offset;
 	noteDefaultPositionY = scrollPanel->GetScrollPos(wxVERTICAL) + offset;
 
-	Note* note = new Note(550, 150, 0, noteDefaultPositionX, noteDefaultPositionY, TextInput, font, ForegroundColor, BackgroundColor, notSidePanel, this);
+	Note* note = new Note(150, 150, 0, noteDefaultPositionX, noteDefaultPositionY, TextInput, ForegroundColor, BackgroundColor, notSidePanel, this);
 
 	TextInput->SelectAll();
 
@@ -672,7 +737,35 @@ void MainFrame::AddNote(wxCommandEvent& evt)
 	isDrawingRect = false;
 	isBrushActive = false;
 	isEraseActive = false;
+	showBrushes = false;
 
+	UpdateBrushes();
+	UpdateBrushes();
+	UpdateToolInfo();
+}
+
+void MainFrame::AddToDo(wxCommandEvent& evt)
+{
+	int offset = 150;
+
+	noteDefaultPositionX = scrollPanel->GetScrollPos(wxHORIZONTAL) + offset;
+	noteDefaultPositionY = scrollPanel->GetScrollPos(wxVERTICAL) + offset;
+
+	todoCount++;
+
+	wxString title = "To-Do List #" + to_string(todoCount);
+
+	ToDoList* todo = new ToDoList(noteDefaultPositionX, noteDefaultPositionY, 150, 300, notSidePanel, title, this);
+
+	todo->Raise();
+
+	isDrawingRect = false;
+	isBrushActive = false;
+	isEraseActive = false;
+	showBrushes = false;
+
+
+	UpdateBrushes();
 	UpdateToolInfo();
 }
 
@@ -681,11 +774,14 @@ void MainFrame::DrawRectangle(wxCommandEvent& evt)
 	isDrawingRect = !isDrawingRect;
 	isBrushActive = false;
 	isEraseActive = false;
+	showBrushes = false;
+
 
 	wxLogStatus("DrawingRectangle");
 	SetCursor(wxCURSOR_CROSS);
 
 
+	UpdateBrushes();
 	UpdateToolInfo();
 }
 
@@ -694,10 +790,9 @@ void MainFrame::ActivateBrushTool(wxCommandEvent& evt)
 	isBrushActive = !isBrushActive;
 	isDrawingRect = false;
 	isEraseActive = false;
+	showBrushes = true;
 
-	//SetCursor(wxCURSOR_SPRAYCAN);
-
-
+	UpdateBrushes();
 	UpdateToolInfo();
 }
 
@@ -706,9 +801,13 @@ void MainFrame::ActivateEraseTool(wxCommandEvent& evt)
 	isEraseActive = !isEraseActive;
 	isDrawingRect = false;
 	isBrushActive = false;
+	showBrushes = true;
 
+	UpdateBrushes();
 	UpdateToolInfo();
 }
+
+
 
 
 
@@ -726,9 +825,12 @@ void MainFrame::OnRightDown(wxMouseEvent& evt)
 
 void MainFrame::OnLeftDown(wxMouseEvent& evt)
 {
-	this->SetFocus();
+	if (evt.GetEventObject() == notSidePanel) {
+		wxLogStatus("Left down triggered fron notSidePanel");
+		activeNote = nullptr;
+	}
 
-	activeNote = nullptr;
+	this->SetFocus();
 	if (activeRectangle != nullptr) {
 		activeRectangle->active = false;
 		activeRectangle->sizerKnob->Show(false);
@@ -763,10 +865,9 @@ void MainFrame::OnLeftDown(wxMouseEvent& evt)
 			notSidePanel->CaptureMouse();
 		}
 
-		brushSize = 5;
-		vector<wxPoint> startingvector;
-		startingvector.push_back(startPos);
-		strokes.push_back({ {brushSize, ForegroundColor}, startingvector});
+		Stroke stroke(ForegroundColor, brushSize);
+		stroke.points.push_back(startPos);
+		strokes.push_back(stroke);
 	}
 	wxLogStatus("down");
 	//notSidePanel->Refresh();
@@ -804,7 +905,7 @@ void MainFrame::OnLeftUp(wxMouseEvent& evt)
 
 		int LastStrokeIndex = strokes.size();
 
-		wxLogStatus("Refreshed, number of circles: %i", int(strokes[LastStrokeIndex - 1].second.size()));
+		wxLogStatus("Refreshed, number of circles: %i", int(strokes[LastStrokeIndex - 1].points.size()));
 	}
 
 	isDrawingRect = false;
@@ -812,9 +913,93 @@ void MainFrame::OnLeftUp(wxMouseEvent& evt)
 	SetCursor(wxCURSOR_DEFAULT);
 }
 
+void MainFrame::OnMouseMotion(wxMouseEvent& evt) {
+	if (m_isPanning && evt.Dragging() && evt.RightIsDown()) {
+		wxPoint delta = wxGetMousePosition() - endPos;
+		wxPoint scrollCord = wxPoint(scrollPanel->GetScrollPos(wxHORIZONTAL), scrollPanel->GetScrollPos(wxVERTICAL));
+		scrollPanel->Scroll(scrollCord - delta);
+	}
+	endPos = wxGetMousePosition();
+
+	if (isDrawingRect && evt.LeftIsDown()) {
+		endPos = evt.GetPosition();
+
+		if (bufferPoint.x > endPos.x && bufferPoint.y > endPos.y) {
+			drawnPanel->SetPosition(bufferPoint - (startPos - endPos));
+		}
+		else if (bufferPoint.x > endPos.x && bufferPoint.y < endPos.y) {
+			drawnPanel->SetPosition(wxPoint(bufferPoint.x - (startPos.x - endPos.x), bufferPoint.y));
+		}
+		else if (bufferPoint.x < endPos.x && bufferPoint.y > endPos.y) {
+			drawnPanel->SetPosition(wxPoint(bufferPoint.x, bufferPoint.y - (startPos.y - endPos.y)));
+		}
+
+		drawnPanel->SetSize(abs((endPos - startPos).x), abs((endPos - startPos).y));
+
+		drawnPanel->Refresh(); // Refresh only the drawn panel
+	}
+
+	if (isBrushActive && evt.LeftIsDown()) {
+		wxPoint mousePos = evt.GetPosition();
+		strokes.back().points.push_back(mousePos);
+		wxLogStatus("Drawing");
+
+		// Get the last two points and refresh only the affected area
+		if (strokes.back().points.size() > 1) {
+			wxPoint lastPoint = strokes.back().points[strokes.back().points.size() - 2];
+			wxPoint newPoint = strokes.back().points.back();
+
+			wxRect updateRegion = wxRect(lastPoint, newPoint);
+			updateRegion.Inflate(brushSize + 2); // Expand to include brush size
+
+			notSidePanel->RefreshRect(updateRegion);
+		}
+	}
+
+	wxPoint mousePos = evt.GetPosition();
+
+	if (isEraseActive && evt.LeftIsDown()) {
+		float eraseRadius = 10.0f; // Adjust eraser sensitivity
+		wxRect eraseBounds(mousePos.x - eraseRadius, mousePos.y - eraseRadius,
+			eraseRadius * 2, eraseRadius * 2);
+		bool erasedSomething = false;
+
+		strokes.erase(std::remove_if(strokes.begin(), strokes.end(),
+			[&](const auto& stroke) {
+				for (const wxPoint& point : stroke.points) {
+					if (std::hypot(mousePos.x - point.x, mousePos.y - point.y) < eraseRadius) {
+						eraseBounds.Union(wxRect(point, wxSize(1, 1))); // Expand erase region
+						erasedSomething = true;
+						return true; // Mark stroke for removal
+					}
+				}
+				return false; // Keep stroke
+			}),
+			strokes.end()
+		);
+
+		// Only refresh the affected area if something was erased
+		if (erasedSomething) {
+			eraseBounds.Inflate(1000); // Slightly expand the region for better clearing
+			notSidePanel->RefreshRect(eraseBounds);
+		}
+	}
+
+	evt.Skip();
+}
+
+
+
+// styling
 void MainFrame::OnBoldClick(wxCommandEvent& evt)
 {
-	if (TextInput->GetSelectionRange().GetLength() != 0) {
+	Bold = !Bold;
+	boldButton->SetBackgroundColour(Bold? wxColor(135, 135, 135) : boldButton->GetParent()->GetBackgroundColour());
+
+	attr.SetFontWeight(Bold? wxFONTWEIGHT_BOLD : wxFONTWEIGHT_NORMAL);
+	TextInput->SetDefaultStyle(attr);
+
+	if (TextInput->HasSelection()) {
 
 		bool flag = TextInput->IsSelectionBold() ? true : false;
 
@@ -826,20 +1011,24 @@ void MainFrame::OnBoldClick(wxCommandEvent& evt)
 				TextInput->SetStyle(i, i + 1, charAttr);
 			}
 		}
+		wxLogStatus("Has selection");
 	}
 
-	Bold = !Bold;
-	boldButton->SetBackgroundColour(Bold? wxColor(135, 135, 135) : boldButton->GetParent()->GetBackgroundColour());
-
-	attr.SetFontWeight(Bold? wxFONTWEIGHT_BOLD : wxFONTWEIGHT_NORMAL);
-	TextInput->SetDefaultStyle(attr);
-
 	TextInput->SetFocus();
+	boldButton->Refresh();
+
+	//UpdateTextInfo();
 }
 
 void MainFrame::OnItalicClick(wxCommandEvent& evt)
 {
-	if (TextInput->GetSelectionRange().GetLength() != 0) {
+	Italic = !Italic;
+	italicButton->SetBackgroundColour(Italic ? wxColor(135, 135, 135) : italicButton->GetParent()->GetBackgroundColour());
+
+	attr.SetFontStyle(Italic ? wxFONTSTYLE_ITALIC : wxFONTSTYLE_NORMAL);
+	TextInput->SetDefaultStyle(attr);
+
+	if (TextInput->HasSelection()) {
 
 		bool flag = TextInput->IsSelectionItalics() ? true : false;
 
@@ -853,18 +1042,15 @@ void MainFrame::OnItalicClick(wxCommandEvent& evt)
 		}
 	}
 
-	Italic = !Italic;
-	italicButton->SetBackgroundColour(Italic ? wxColor(135, 135, 135) : italicButton->GetParent()->GetBackgroundColour());
-
-	attr.SetFontStyle(Italic ? wxFONTSTYLE_ITALIC : wxFONTSTYLE_NORMAL);
-	TextInput->SetDefaultStyle(attr);
-
 	TextInput->SetFocus();
+	italicButton->Refresh();
+
+	//CallAfter(&MainFrame::UpdateTextInfo);
 }
 
 void MainFrame::OnUnderlineClick(wxCommandEvent& evt)
 {
-	if (TextInput->GetSelectionRange().GetLength() != 0) {
+	if (TextInput->HasSelection()) {
 
 		bool flag = TextInput->IsSelectionUnderlined() ? true : false;
 
@@ -886,6 +1072,9 @@ void MainFrame::OnUnderlineClick(wxCommandEvent& evt)
 	TextInput->SetDefaultStyle(attr);
 
 	TextInput->SetFocus();
+	underlineButton->Refresh();
+
+	//CallAfter(&MainFrame::UpdateTextInfo);
 }
 
 void MainFrame::OnLeftAlignClick(wxCommandEvent& evt)
@@ -935,6 +1124,8 @@ void MainFrame::OnLeftAlignClick(wxCommandEvent& evt)
 	TextInput->SetFocus();
 	TextInput->Refresh();
 	TextInput->Update();
+
+	CallAfter(&MainFrame::UpdateTextInfo);
 }
 
 void MainFrame::OnCenterAlignClick(wxCommandEvent& evt)
@@ -983,6 +1174,8 @@ void MainFrame::OnCenterAlignClick(wxCommandEvent& evt)
 	TextInput->SetFocus();
 	TextInput->Refresh();
 	TextInput->Update();
+
+	CallAfter(&MainFrame::UpdateTextInfo);
 }
 
 void MainFrame::OnRightAlignClick(wxCommandEvent& evt)
@@ -1030,8 +1223,13 @@ void MainFrame::OnRightAlignClick(wxCommandEvent& evt)
 	TextInput->SetFocus();
 	TextInput->Refresh();
 	TextInput->Update();
+
+	CallAfter(&MainFrame::UpdateTextInfo);
 }
 
+
+
+// text input
 void MainFrame::TextInputShortcuts(wxKeyEvent& evt)
 {
 
@@ -1072,6 +1270,10 @@ void MainFrame::TextInputShortcuts(wxKeyEvent& evt)
 			attr.SetTextColour(*wxBLACK);
 			FontSizeBox->SetValue("9");
 			textColorPreview->SetBackgroundColour(*wxBLACK);
+
+			boldButton->Refresh();
+			italicButton->Refresh();
+			underlineButton->Refresh();
 			break;
 		case 'L':
 			OnLeftAlignClick(dummyEvent);
@@ -1148,22 +1350,23 @@ void MainFrame::TextInputShortcuts(wxKeyEvent& evt)
 		}
 	}
 
-	switch (evt.GetKeyCode()) {
-		case WXK_LEFT:
-			CallAfter(&MainFrame::UpdateTextInfo);
-			break;
-		case WXK_RIGHT:
-			CallAfter(&MainFrame::UpdateTextInfo);
-			break;
-		case WXK_UP:
-			CallAfter(&MainFrame::UpdateTextInfo);
-			break;
-		case WXK_DOWN:
-			CallAfter(&MainFrame::UpdateTextInfo);
-			break;
-		default:
-			break;
-	}
+	//switch (evt.GetKeyCode()) {
+	//	case WXK_LEFT:
+	//		CallAfter(&MainFrame::UpdateTextInfo);
+	//		break;
+	//	case WXK_RIGHT:
+	//		CallAfter(&MainFrame::UpdateTextInfo);
+	//		break;
+	//	case WXK_UP:
+	//		CallAfter(&MainFrame::UpdateTextInfo);
+	//		break;
+	//	case WXK_DOWN:
+	//		CallAfter(&MainFrame::UpdateTextInfo);
+	//		break;
+	//	default:
+	//		break;
+	//}
+
 
 	evt.Skip();
 }
@@ -1176,9 +1379,7 @@ void MainFrame::OnCaretClick(wxMouseEvent& evt)
 
 void MainFrame::TextInputType(wxCommandEvent& evt)
 {
-	wxLogStatus("Typing...");
 	CallAfter(&MainFrame::UpdateTextInfo);
-	FontSizeBox->Refresh();
 	evt.Skip();
 }
 
@@ -1220,6 +1421,9 @@ void MainFrame::OnAddButtonClick(wxCommandEvent& evt)
 	AddNote(dummyEvent);
 }
 
+
+
+// drawing
 void MainFrame::Draw(wxPaintEvent& evt) {
 	wxPaintDC dc(notSidePanel);
 	wxGraphicsContext* gc = wxGraphicsContext::Create(dc);
@@ -1228,100 +1432,102 @@ void MainFrame::Draw(wxPaintEvent& evt) {
 	gc->SetAntialiasMode(wxANTIALIAS_DEFAULT);
 
 	for (const auto& stroke : strokes) {
-		gc->SetPen(wxPen(stroke.first.second, stroke.first.first));
+		gc->SetPen(wxPen(stroke.color, stroke.size));
 		gc->SetBrush(*wxRED_BRUSH);
 
-		if (stroke.second.size() < 2) continue;
+		if (stroke.points.size() < 2) continue;
 
 		wxGraphicsPath path = gc->CreatePath();
-		path.MoveToPoint(stroke.second[0].x, stroke.second[0].y);
+		path.MoveToPoint(stroke.points[0].x, stroke.points[0].y);
 
-		for (size_t i = 1; i < stroke.second.size() - 1; i++) {
-			wxPoint mid = (stroke.second[i] + stroke.second[i + 1]) / 2;
+		for (size_t i = 1; i < stroke.points.size() - 1; i++) {
+			wxPoint mid = (stroke.points[i] + stroke.points[i + 1]) / 2;
 			path.AddQuadCurveToPoint(
-				stroke.second[i].x, stroke.second[i].y, // Control point
+				stroke.points[i].x, stroke.points[i].y, // Control point
 				mid.x, mid.y                             // End point
 			);
 		}
 
-		path.AddLineToPoint(stroke.second.back().x, stroke.second.back().y);
+		path.AddLineToPoint(stroke.points.back().x, stroke.points.back().y);
 		gc->StrokePath(path);
 	}
 
 	delete gc;
 }
 
-void MainFrame::OnMouseMotion(wxMouseEvent& evt) {
-	if (m_isPanning && evt.Dragging() && evt.RightIsDown()) {
-		wxPoint delta = wxGetMousePosition() - endPos;
-		wxPoint scrollCord = wxPoint(scrollPanel->GetScrollPos(wxHORIZONTAL), scrollPanel->GetScrollPos(wxVERTICAL));
-		scrollPanel->Scroll(scrollCord - delta);
-	}
-	endPos = wxGetMousePosition();
-
-	if (isDrawingRect && evt.LeftIsDown()) {
-		endPos = evt.GetPosition();
-
-		if (bufferPoint.x > endPos.x && bufferPoint.y > endPos.y) {
-			drawnPanel->SetPosition(bufferPoint - (startPos - endPos));
-		}
-		else if (bufferPoint.x > endPos.x && bufferPoint.y < endPos.y) {
-			drawnPanel->SetPosition(wxPoint(bufferPoint.x - (startPos.x - endPos.x), bufferPoint.y));
-		}
-		else if (bufferPoint.x < endPos.x && bufferPoint.y > endPos.y) {
-			drawnPanel->SetPosition(wxPoint(bufferPoint.x, bufferPoint.y - (startPos.y - endPos.y)));
-		}
-
-		drawnPanel->SetSize(abs((endPos - startPos).x), abs((endPos - startPos).y));
-
-		drawnPanel->Refresh(); // Refresh only the drawn panel
+void MainFrame::OnUpdateButtonClick(wxCommandEvent& evt)
+{
+	//wxLogStatus("On Update triggered");
+	if (activeNote != nullptr) {
+		activeNote->UpdateNote(TextInput, BackgroundColor);
 	}
 
-	if (isBrushActive && evt.LeftIsDown()) {
-		wxPoint mousePos = evt.GetPosition();
-		strokes.back().second.push_back(mousePos);
-		wxLogStatus("Drawing");
+}
 
-		// Get the last two points and refresh only the affected area
-		if (strokes.back().second.size() > 1) {
-			wxPoint lastPoint = strokes.back().second[strokes.back().second.size() - 2];
-			wxPoint newPoint = strokes.back().second.back();
 
-			wxRect updateRegion = wxRect(lastPoint, newPoint);
-			updateRegion.Inflate(brushSize + 2); // Expand to include brush size
 
-			notSidePanel->RefreshRect(updateRegion);
-		}
-	}
+// brushes
+void MainFrame::XSbrushEvent(wxCommandEvent& evt)
+{
+	XSbrushActive = true;
+	SbrushActive = false;
+	MbrushActive = false;
+	LbrushActive = false;
+	XLbrushActive = false;
 
-	wxPoint mousePos = evt.GetPosition();
+	brushSize = 1;
 
-	if (isEraseActive && evt.LeftIsDown()) {
-		float eraseRadius = 10.0f; // Adjust eraser sensitivity
-		wxRect eraseBounds(mousePos.x - eraseRadius, mousePos.y - eraseRadius,
-			eraseRadius * 2, eraseRadius * 2);
-		bool erasedSomething = false;
+	UpdateBrushes();
+}
 
-		strokes.erase(std::remove_if(strokes.begin(), strokes.end(),
-			[&](const auto& stroke) {
-				for (const wxPoint& point : stroke.second) {
-					if (std::hypot(mousePos.x - point.x, mousePos.y - point.y) < eraseRadius) {
-						eraseBounds.Union(wxRect(point, wxSize(1, 1))); // Expand erase region
-						erasedSomething = true;
-						return true; // Mark stroke for removal
-					}
-				}
-				return false; // Keep stroke
-			}),
-			strokes.end()
-		);
+void MainFrame::SbrushEvent(wxCommandEvent& evt)
+{
+	XSbrushActive = false;
+	SbrushActive = true;
+	MbrushActive = false;
+	LbrushActive = false;
+	XLbrushActive = false;
 
-		// Only refresh the affected area if something was erased
-		if (erasedSomething) {
-			eraseBounds.Inflate(1000); // Slightly expand the region for better clearing
-			notSidePanel->RefreshRect(eraseBounds);
-		}
-	}
+	brushSize = 2;
 
-	evt.Skip();
+	UpdateBrushes();
+}
+
+void MainFrame::MbrushEvent(wxCommandEvent& evt)
+{
+	XSbrushActive = false;
+	SbrushActive = false;
+	MbrushActive = true;
+	LbrushActive = false;
+	XLbrushActive = false;
+
+	brushSize = 3;
+
+	UpdateBrushes();
+}
+
+void MainFrame::LbrushEvent(wxCommandEvent& evt)
+{
+	XSbrushActive = false;
+	SbrushActive = false;
+	MbrushActive = false;
+	LbrushActive = true;
+	XLbrushActive = false;
+
+	brushSize = 5;
+
+	UpdateBrushes();
+}
+
+void MainFrame::XLbrushEvent(wxCommandEvent& evt)
+{
+	XSbrushActive = false;
+	SbrushActive = false;
+	MbrushActive = false;
+	LbrushActive = false;
+	XLbrushActive = true;
+
+	brushSize = 10;
+
+	UpdateBrushes();
 }

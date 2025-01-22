@@ -45,6 +45,9 @@
     <ClInclude Include="Cursors.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Stroke.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="MainFrame.cpp">
@@ -106,13 +109,44 @@
     <Image Include="EraseWhiteMode.ico">
       <Filter>Resource Files</Filter>
     </Image>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="ClosedHand.cur">
+    <Image Include="plus.ico">
       <Filter>Resource Files</Filter>
-    </None>
-    <None Include="OpenHand.cur">
+    </Image>
+    <Image Include="ToDoDarkMode.ico">
       <Filter>Resource Files</Filter>
-    </None>
+    </Image>
+    <Image Include="ToDoWhiteMode.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="LbrushDarkMode.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="LbrushWhiteMode.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="MbrushDarkMode.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="MbrushWhiteMode.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="SbrushDarkMode.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="SbrushWhiteMode.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="XLbrushDarkMode.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="XLbrushWhiteMode.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="XSbrushDarkMode.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="XSbrushWhiteMode.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
   </ItemGroup>
 </Project>

@@ -27,6 +27,7 @@
     <ClInclude Include="Rectangle.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="RGB2HSL.h" />
+    <ClInclude Include="Stroke.h" />
     <ClInclude Include="ToDoList.h" />
     <ClInclude Include="Tool.h" />
   </ItemGroup>
@@ -47,15 +48,24 @@
     <Image Include="EraseDarkMode.ico" />
     <Image Include="EraseWhiteMode.ico" />
     <Image Include="Lalign.ico" />
+    <Image Include="LbrushDarkMode.ico" />
+    <Image Include="LbrushWhiteMode.ico" />
+    <Image Include="MbrushDarkMode.ico" />
+    <Image Include="MbrushWhiteMode.ico" />
     <Image Include="NoteDarkMode.ico" />
     <Image Include="NoteWhiteMode.ico" />
+    <Image Include="plus.ico" />
     <Image Include="Ralign.ico" />
     <Image Include="RectangleDarkMode.ico" />
     <Image Include="RectangleWhiteMode.ico" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="ClosedHand.cur" />
-    <None Include="OpenHand.cur" />
+    <Image Include="SbrushDarkMode.ico" />
+    <Image Include="SbrushWhiteMode.ico" />
+    <Image Include="ToDoDarkMode.ico" />
+    <Image Include="ToDoWhiteMode.ico" />
+    <Image Include="XLbrushDarkMode.ico" />
+    <Image Include="XLbrushWhiteMode.ico" />
+    <Image Include="XSbrushDarkMode.ico" />
+    <Image Include="XSbrushWhiteMode.ico" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>17.0</VCProjectVersion>
