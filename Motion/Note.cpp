@@ -58,5 +58,23 @@ void Note::MakeActiveNote(wxMouseEvent& evt)
 {
     mainframe->activeNote = this;
 
+    mainframe->TextInput->Freeze();
+    mainframe->TextInput->GetBuffer().ResetAndClearCommands();
+    wxRichTextBuffer buffer;
+    buffer.Copy(textContent->GetBuffer());
+    mainframe->TextInput->GetBuffer().Copy(buffer);
+
+    mainframe->TextInput->LayoutContent();
+    mainframe->TextInput->Refresh();
+    mainframe->TextInput->Update();
+
+    mainframe->TextInput->Thaw();
+
+    mainframe->editPanel->Layout();
+    mainframe->editPanel->Refresh();
+    mainframe->editPanel->Update();
+
+    mainframe->TextInput->SelectAll();
+
     evt.Skip();
 }

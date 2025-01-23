@@ -11,6 +11,7 @@
 #include "Rectangle.h"
 #include <wx/richtext/richtextctrl.h>
 #include "Stroke.h"
+#include "ToDoList.h"
 
 
 using namespace std;
@@ -26,8 +27,12 @@ struct MainFrame : public wxFrame
 	void addScrolledPanel();
 	void UpdateBrushes();
 	void ResetFormatting();
-	bool XSbrushActive, SbrushActive, MbrushActive, LbrushActive, XLbrushActive, showBrushes;
+	bool XSbrushActive = false, SbrushActive = false, MbrushActive = false, LbrushActive = false, XLbrushActive = false, showBrushes = false;
 	void addEditPanel(wxWindow* parent);
+	void SaveToFile(const wxString& filePath);
+	void SaveToDoListsToFile(const wxString& filePaht);
+	void LoadFromFile(const wxString& filePath);
+	void LoadToDoListsToFile(const wxString& filePath);
 
 	//void SetActive(Note* ACTIVENOTE);
 	void UpdateTextInfo();
@@ -135,6 +140,8 @@ struct MainFrame : public wxFrame
 
 	wxRadioBox* ColorTypeRadioBox;
 
+	wxString currentFilePath;
+
 	MainFrame(const wxString& title);
 	vector<std::string> paletteColors = {
 		// Black and White
@@ -167,8 +174,9 @@ struct MainFrame : public wxFrame
 		"#2f2f2f"  // Dark Charcoal
 	};
 	vector<wxPanel*> paletteSwatches;
-	//vector<pair< pair<int, wxColor> , vector<wxPoint> >> strokes;
 	vector<Stroke> strokes;
+	deque<Note*> notes;
+	deque<ToDoList*> todolists;
 
 	void SwitchThemeButton(wxCommandEvent& evt);
 	void OnSwatchHover(wxMouseEvent& evt);
@@ -198,6 +206,7 @@ struct MainFrame : public wxFrame
 	void OnAddButtonClick(wxCommandEvent& evt);
 	void Draw(wxPaintEvent& evt);
 	void OnUpdateButtonClick(wxCommandEvent& evt);
+	void Shortcuts(wxKeyEvent& evt);
 
 	//brushes
 	void XSbrushEvent(wxCommandEvent& evt);
@@ -205,4 +214,9 @@ struct MainFrame : public wxFrame
 	void MbrushEvent(wxCommandEvent& evt);
 	void LbrushEvent(wxCommandEvent& evt);
 	void XLbrushEvent(wxCommandEvent& evt);
+	void OnFileSaveAs(wxCommandEvent& evt);
+	void OnFileSave(wxCommandEvent& evt);
+	void OnFileExit(wxCommandEvent& evt);
+	void OnFileOpen(wxCommandEvent& evt);
+
 };

@@ -174,8 +174,17 @@ void rectangle::ShortCuts(wxKeyEvent& evt)
 {
     wxLogStatus("shortcuts");
     if (evt.GetKeyCode() == WXK_DELETE) {
+        if (mainframe->activeNote && dynamic_cast<Note*>(this)) {
+            auto it = std::find(mainframe->notes.begin(), mainframe->notes.end(), this);
+            mainframe->notes.erase(it);
+        }
+        else if (dynamic_cast<ToDoList*>(this)) {
+            auto it = std::find(mainframe->todolists.begin(), mainframe->todolists.end(), this);
+            mainframe->todolists.erase(it);
+        }
         wxLogStatus("Delete");
         mainframe->activeRectangle = nullptr;
+        mainframe->activeNote = nullptr;
         this->Destroy();
     }
     else if (evt.GetKeyCode() == WXK_PAGEUP) {

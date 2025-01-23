@@ -15,6 +15,7 @@
 #include "Cursors.h"
 #include <wx/app.h>
 #include "ToDoList.h"
+#include <wx/xml/xml.h>
 
 using namespace std;
 
@@ -27,6 +28,7 @@ MainFrame::MainFrame(const wxString& title) : wxFrame(nullptr, wxID_ANY, title) 
 	isDark = true;
 	ForegroundColor = "#2f2f2f";
 	BackgroundColor = "#FFDB58";
+	SetIcon(wxIcon("./Icon.ico", wxBITMAP_TYPE_ICO));
 
 	addToolBar(this);
 	addSideBar(notToolBarPanel);
@@ -39,7 +41,7 @@ MainFrame::MainFrame(const wxString& title) : wxFrame(nullptr, wxID_ANY, title) 
 	//H2Font.SetFaceName("Arial Unicode MS");
 
 	this->SetDoubleBuffered(true);
-	//Bind(wxEVT_KEY_DOWN, &MainFrame::Shortcuts, this);
+	this->Bind(wxEVT_KEY_DOWN, &MainFrame::Shortcuts, this);
 
 	TextInput->Newline();
 	TextInput->WriteText("Starting...");
@@ -51,7 +53,7 @@ MainFrame::MainFrame(const wxString& title) : wxFrame(nullptr, wxID_ANY, title) 
 	InputTextColor = wxColor(paletteColors[20]);
 	UpdateBrushes();
 	ResetFormatting();
-	CreateStatusBar();
+	//CreateStatusBar();
 	UpdateTextInfo();
 
 	isDark = !isDark;
@@ -107,14 +109,15 @@ void MainFrame::addMenuBar()
 	wxMenu* addMenu = new wxMenu();
 	wxMenu* settingsMenu = new wxMenu();
 
-	fileMenu->Append(wxID_SAVE, "&Save\tCtrl-S", "Save the notes");
+
+	fileMenu->Append(wxID_SAVE, "&Save\tCtrl+S", "Save the notes");
 	fileMenu->Append(wxID_SAVEAS, "Save &As...", "Save the notes to a specific file");
-	fileMenu->Append(wxID_OPEN, "&Open\tCtrl-O", "Open a file to load notes");
+	fileMenu->Append(wxID_OPEN, "&Open\tCtrl+O", "Open a file to load notes");
 	fileMenu->AppendSeparator();
 	fileMenu->Append(wxID_EXIT, "E&xit", "Exit the application");
 
-	addMenu->Append(wxID_NEW, "&Add Note\tCtrl-N", "Add a new note");
-	addMenu->Append(5, "&Add To-Do List", "Add a new To-Do list");
+	addMenu->Append(wxID_NEW, "&Add Note\tCtrl+N", "Add a new note");
+	addMenu->Append(5, "&Add To-Do List \tCtrl+T", "Add a new To-Do list");
 
 	settingsMenu->Append(55, "Switch Dark/Light", "Switch between dark and light modes");
 
@@ -125,6 +128,12 @@ void MainFrame::addMenuBar()
 	SetMenuBar(menuBar);
 
 	Bind(wxEVT_MENU, &MainFrame::SwitchThemeButton, this, 55);
+	Bind(wxEVT_MENU, &MainFrame::AddNote, this, wxID_NEW);
+	Bind(wxEVT_MENU, &MainFrame::AddToDo, this, 5);
+	Bind(wxEVT_MENU, &MainFrame::OnFileSaveAs, this, wxID_SAVEAS);
+	Bind(wxEVT_MENU, &MainFrame::OnFileSave, this, wxID_SAVE);
+	Bind(wxEVT_MENU, &MainFrame::OnFileOpen, this, wxID_OPEN);
+	Bind(wxEVT_MENU, &MainFrame::OnFileExit, this, wxID_EXIT);
 }
 
 void MainFrame::addScrolledPanel()
@@ -414,8 +423,8 @@ void MainFrame::switchTheme()
 
 	NoteTool->ChangeIcon(isDark ? "./NoteDarkMode.ico" : "./NoteWhiteMode.ico");
 	ToDoTool->ChangeIcon(isDark ? "./ToDoDarkMode.ico" : "./ToDoWhiteMode.ico");
-	RectangleTool->ChangeIcon(isDark ? "./RectangleDarkMode.ico" : "./RectangleWhiteMode.ico");
-	ElipseTool->ChangeIcon(isDark ? "./ElipseDarkMode.ico" : "./ElipseWhiteMode.ico");
+	//RectangleTool->ChangeIcon(isDark ? "./RectangleDarkMode.ico" : "./RectangleWhiteMode.ico");
+	//ElipseTool->ChangeIcon(isDark ? "./ElipseDarkMode.ico" : "./ElipseWhiteMode.ico");
 	BrushTool->ChangeIcon(isDark ? "./BrushDarkMode.ico" : "./BrushWhiteMode.ico");
 	EraseTool->ChangeIcon(isDark ? "./EraseDarkMode.ico" : "./EraseWhiteMode.ico");
 
@@ -557,7 +566,7 @@ void MainFrame::UpdateTextInfo()
 
 void MainFrame::UpdateToolInfo()
 {
-	RectangleTool->SetBackgroundColour(isDrawingRect ? wxColor(135, 135, 135) : RectangleTool->GetParent()->GetBackgroundColour());
+	//RectangleTool->SetBackgroundColour(isDrawingRect ? wxColor(135, 135, 135) : RectangleTool->GetParent()->GetBackgroundColour());
 	BrushTool->SetBackgroundColour(isBrushActive ? wxColor(135, 135, 135) : BrushTool->GetParent()->GetBackgroundColour());
 	EraseTool->SetBackgroundColour(isEraseActive? wxColor(135, 135, 135) : EraseTool->GetParent()->GetBackgroundColour());
 
@@ -733,8 +742,8 @@ void MainFrame::addToolBar(wxWindow* parent)
 	//Tools
 	NoteTool = new Tool(toolBarPanel, "Add a note \t Ctrl+N", isDark ? "./NoteDarkMode.ico" : "./NoteWhiteMode.ico");
 	ToDoTool = new Tool(toolBarPanel, "Add a To-Do list \t Ctrl+T", isDark ? "./ToDoDarkMode.ico" : "./ToDoWhiteMode.ico");
-	RectangleTool = new Tool(toolBarPanel, "Draw a rectangle \t Ctrl+R", isDark ? "./RectangleDarkMode.ico" : "./RectangleWhiteMode.ico");
-	ElipseTool = new Tool(toolBarPanel, "Draw an Elipse \t Ctrl+E", isDark ? "./ElipseDarkMode.ico" : "./ElipseWhiteMode.ico");
+	//RectangleTool = new Tool(toolBarPanel, "Draw a rectangle \t Ctrl+R", isDark ? "./RectangleDarkMode.ico" : "./RectangleWhiteMode.ico");
+	//ElipseTool = new Tool(toolBarPanel, "Draw an Elipse \t Ctrl+E", isDark ? "./ElipseDarkMode.ico" : "./ElipseWhiteMode.ico");
 	BrushTool = new Tool(toolBarPanel, "Draw using the Brush", isDark ? "./BrushDarkMode.ico" : "./BrushWhiteMode.ico");
 	EraseTool = new Tool(toolBarPanel, "Erase strokes", isDark ? "./EraseDarkMode.ico" : "./EraseWhiteMode.ico");
 
@@ -747,8 +756,8 @@ void MainFrame::addToolBar(wxWindow* parent)
 
 	toolSizer->Add(NoteTool, 0, wxEXPAND);
 	toolSizer->Add(ToDoTool, 0, wxEXPAND);
-	toolSizer->Add(RectangleTool, 0, wxEXPAND);
-	toolSizer->Add(ElipseTool, 0, wxEXPAND);
+	//toolSizer->Add(RectangleTool, 0, wxEXPAND);
+	//toolSizer->Add(ElipseTool, 0, wxEXPAND);
 	toolSizer->Add(BrushTool, 0, wxEXPAND);
 	toolSizer->Add(EraseTool, 0, wxEXPAND);
 	toolSizer->AddStretchSpacer();
@@ -763,7 +772,7 @@ void MainFrame::addToolBar(wxWindow* parent)
 
 	NoteTool->Bind(wxEVT_TOGGLEBUTTON, &MainFrame::AddNote, this);
 	ToDoTool->Bind(wxEVT_TOGGLEBUTTON, &MainFrame::AddToDo, this);
-	RectangleTool->Bind(wxEVT_TOGGLEBUTTON, &MainFrame::DrawRectangle, this);
+	//RectangleTool->Bind(wxEVT_TOGGLEBUTTON, &MainFrame::DrawRectangle, this);
 	BrushTool->Bind(wxEVT_TOGGLEBUTTON, &MainFrame::ActivateBrushTool, this);
 	EraseTool->Bind(wxEVT_TOGGLEBUTTON, &MainFrame::ActivateEraseTool, this);
 
@@ -786,6 +795,7 @@ void MainFrame::AddNote(wxCommandEvent& evt)
 	noteDefaultPositionY = scrollPanel->GetScrollPos(wxVERTICAL) + offset;
 
 	Note* note = new Note(150, 150, 0, noteDefaultPositionX, noteDefaultPositionY, TextInput, ForegroundColor, BackgroundColor, notSidePanel, this);
+	notes.push_back(note);
 
 	TextInput->SelectAll();
 
@@ -813,6 +823,7 @@ void MainFrame::AddToDo(wxCommandEvent& evt)
 	wxString title = "To-Do List #" + to_string(todoCount);
 
 	ToDoList* todo = new ToDoList(noteDefaultPositionX, noteDefaultPositionY, 150, 300, notSidePanel, title, this);
+	todolists.push_back(todo);
 
 	todo->Raise();
 
@@ -826,21 +837,21 @@ void MainFrame::AddToDo(wxCommandEvent& evt)
 	UpdateToolInfo();
 }
 
-void MainFrame::DrawRectangle(wxCommandEvent& evt)
-{
-	isDrawingRect = !isDrawingRect;
-	isBrushActive = false;
-	isEraseActive = false;
-	showBrushes = false;
-
-
-	wxLogStatus("DrawingRectangle");
-	SetCursor(wxCURSOR_CROSS);
-
-
-	UpdateBrushes();
-	UpdateToolInfo();
-}
+//void MainFrame::DrawRectangle(wxCommandEvent& evt)
+//{
+//	isDrawingRect = !isDrawingRect;
+//	isBrushActive = false;
+//	isEraseActive = false;
+//	showBrushes = false;
+//
+//
+//	wxLogStatus("DrawingRectangle");
+//	SetCursor(wxCURSOR_CROSS);
+//
+//
+//	UpdateBrushes();
+//	UpdateToolInfo();
+//}
 
 void MainFrame::ActivateBrushTool(wxCommandEvent& evt)
 {
@@ -862,6 +873,7 @@ void MainFrame::ActivateEraseTool(wxCommandEvent& evt)
 
 	UpdateBrushes();
 	UpdateToolInfo();
+
 }
 
 
@@ -1532,6 +1544,47 @@ void MainFrame::OnUpdateButtonClick(wxCommandEvent& evt)
 
 }
 
+void MainFrame::Shortcuts(wxKeyEvent& evt)
+{
+	wxCommandEvent dummyEvent;
+
+	if (evt.ControlDown()) {
+		switch (evt.GetKeyCode())
+		{
+		//case 'R':
+		//	DrawRectangle(dummyEvent);
+		//	break;
+		case 'B':
+			ActivateBrushTool(dummyEvent);
+			break;
+		case 'E':
+			ActivateEraseTool(dummyEvent);
+			break;
+		case '1':
+			if(showBrushes) XSbrushEvent(dummyEvent);
+			break;
+		case '2':
+			if (showBrushes) SbrushEvent(dummyEvent);
+			break;
+		case '3':
+			if (showBrushes) MbrushEvent(dummyEvent);
+			break;
+		case '4':
+			if (showBrushes) LbrushEvent(dummyEvent);
+			break;
+		case '5':
+			if (showBrushes) XLbrushEvent(dummyEvent);
+			break;
+		default:
+			break;
+		}
+
+	}
+	wxLogStatus("Key pressed: %d", evt.GetKeyCode());
+
+	evt.Skip();
+}
+
 
 
 // brushes
@@ -1598,4 +1651,350 @@ void MainFrame::XLbrushEvent(wxCommandEvent& evt)
 	brushSize = 10;
 
 	UpdateBrushes();
+}
+
+
+
+// saving and loading
+void MainFrame::OnFileSaveAs(wxCommandEvent& evt) {
+	wxFileDialog saveFileDialog(this, "Save Notes", "", "", "XML files (*.xml)|*.xml", wxFD_SAVE | wxFD_OVERWRITE_PROMPT);
+	if (saveFileDialog.ShowModal() == wxID_CANCEL) return;
+
+	currentFilePath = saveFileDialog.GetPath();
+
+	// Ensure file path has .xml extension
+	if (!currentFilePath.Lower().EndsWith(".xml")) {
+		currentFilePath += ".xml";
+	}
+
+	SaveToFile(currentFilePath);
+
+}
+
+void MainFrame::OnFileSave(wxCommandEvent& evt) {
+	if (currentFilePath.IsEmpty()) {
+		OnFileSaveAs(evt);
+	}
+	else {
+		SaveToFile(currentFilePath);
+	}
+}
+
+void MainFrame::SaveToFile(const wxString& filePath) {
+	wxXmlDocument xmlDoc;
+	wxXmlNode* root = new wxXmlNode(wxXML_ELEMENT_NODE, "Notes");
+	xmlDoc.SetRoot(root);
+
+	wxXmlNode* defaultPath = new wxXmlNode(wxXML_ELEMENT_NODE, "Path");
+	defaultPath->AddAttribute("Path", currentFilePath);
+
+	root->AddChild(defaultPath);
+
+	for (const auto& note : notes) {
+		wxXmlNode* noteNode = new wxXmlNode(wxXML_ELEMENT_NODE, "Note");
+
+		// Store position
+		noteNode->AddAttribute("x", to_string(note->GetPosition().x));
+		noteNode->AddAttribute("y", to_string(note->GetPosition().y));
+
+		noteNode->AddAttribute("width", to_string(note->GetSize().GetWidth()));
+		noteNode->AddAttribute("height", to_string(note->GetSize().GetHeight()));
+
+		// Store background color
+		noteNode->AddAttribute("background", note->bcolor.GetAsString(wxC2S_HTML_SYNTAX));
+
+		// Store text content and formatting
+		wxRichTextBuffer& buffer = note->textContent->GetBuffer();
+		wxRichTextParagraphLayoutBox* container = &buffer;
+
+		for (wxRichTextObjectList::compatibility_iterator node = container->GetChildren().GetFirst();
+			node; node = node->GetNext()) {
+
+			wxRichTextParagraph* para = wxDynamicCast(node->GetData(), wxRichTextParagraph);
+			if (!para) continue;
+
+			wxXmlNode* paraNode = new wxXmlNode(wxXML_ELEMENT_NODE, "Paragraph");
+			noteNode->AddChild(paraNode);
+
+			for (wxRichTextObjectList::compatibility_iterator textNode = para->GetChildren().GetFirst();
+				textNode; textNode = textNode->GetNext()) {
+
+				wxRichTextPlainText* text = wxDynamicCast(textNode->GetData(), wxRichTextPlainText);
+				if (text) {
+					wxXmlNode* textXmlNode = new wxXmlNode(wxXML_ELEMENT_NODE, "Text");
+					textXmlNode->AddAttribute("value", text->GetText());
+
+					wxRichTextAttr attr = text->GetAttributes();
+
+					// Store formatting attributes
+					if (attr.GetFontWeight() == wxFONTWEIGHT_BOLD)
+						textXmlNode->AddAttribute("bold", "1");
+					if (attr.GetFontStyle() == wxFONTSTYLE_ITALIC)
+						textXmlNode->AddAttribute("italic", "1");
+					if (attr.GetFontUnderlined())
+						textXmlNode->AddAttribute("underline", "1");
+
+					switch (attr.GetAlignment())
+					{
+					case wxTEXT_ALIGNMENT_LEFT:
+						textXmlNode->AddAttribute("align", "left");
+						break;
+					case wxTEXT_ALIGNMENT_CENTER:
+						textXmlNode->AddAttribute("align", "center");
+						break;
+					case wxTEXT_ALIGNMENT_RIGHT:
+						textXmlNode->AddAttribute("align", "right");
+						break;
+					default:
+						break;
+					}
+
+					if (attr.HasTextColour())
+						textXmlNode->AddAttribute("color", attr.GetTextColour().GetAsString(wxC2S_HTML_SYNTAX));
+
+					if (attr.HasFontPointSize())
+						textXmlNode->AddAttribute("fontSize", wxString::Format("%d", attr.GetFontSize()));
+
+					paraNode->AddChild(textXmlNode);
+				}
+			}
+		}
+
+		root->AddChild(noteNode);
+	}
+
+	for (const auto& todo : todolists) {
+		wxXmlNode* todoNode = new wxXmlNode(wxXML_ELEMENT_NODE, "ToDo");
+
+		todoNode->AddAttribute("Title", todo->title);
+
+		todoNode->AddAttribute("x", to_string(todo->GetPosition().x));
+		todoNode->AddAttribute("y", to_string(todo->GetPosition().y));
+
+		todoNode->AddAttribute("width", to_string(todo->GetSize().GetWidth()));
+		todoNode->AddAttribute("height", to_string(todo->GetSize().GetHeight()));
+
+		for (int i = 0; i < todo->checkListBox->GetCount(); i++) {
+			wxXmlNode* taskNode = new wxXmlNode(wxXML_ELEMENT_NODE, "Task");
+			taskNode->AddAttribute("Description", todo->checkListBox->GetString(i));
+			taskNode->AddAttribute("State", wxString::Format("%i", todo->checkListBox->IsChecked(i)));
+
+			todoNode->AddChild(taskNode);
+		}
+
+		root->AddChild(todoNode);
+	}
+
+	for (const auto& stroke : strokes) {
+		wxXmlNode* strokeNode = new wxXmlNode(wxXML_ELEMENT_NODE, "Stroke");
+
+		strokeNode->AddAttribute("Color", stroke.color.GetAsString());
+		strokeNode->AddAttribute("Size", to_string(stroke.size));
+
+		for (auto point : stroke.points) {
+			wxXmlNode* pointNode = new wxXmlNode(wxXML_ELEMENT_NODE, "Point");
+
+			pointNode->AddAttribute("x", to_string(point.x));
+			pointNode->AddAttribute("y", to_string(point.y));
+
+			strokeNode->AddChild(pointNode);
+		}
+
+		root->AddChild(strokeNode);
+	}
+
+	if (!xmlDoc.Save(filePath)) {
+		wxLogError("Unable to save the file!");
+	}
+	else {
+		wxLogStatus("File saved successfully!");
+	}
+}
+
+void MainFrame::LoadFromFile(const wxString& filePath) {
+
+	bool newWindow = false;
+	MainFrame* newFrame = new MainFrame("Notelet");
+
+	if (notes.size() > 0 || todolists.size() > 0 || strokes.size() > 0) {
+		newWindow = true;
+		newFrame->Show();
+		newFrame->SetClientSize(1000, 600);
+		//newFrame->Center();
+	}
+	else {
+		newFrame->Destroy();
+	}
+
+
+	wxXmlDocument xmlDoc;
+	if (!xmlDoc.Load(filePath)) {
+		wxLogError("Unable to load the file!");
+		return;
+	}
+
+	wxXmlNode* root = xmlDoc.GetRoot();
+
+	wxXmlNode* child = root->GetChildren();
+	while (child) {
+
+		if (child->GetName() == "Path") {
+			(newWindow ? newFrame : this)->currentFilePath = child->GetAttribute("Path");
+		}
+		else if (child->GetName() == "Note") {
+			// Extract attributes
+			int x, y, width, height;
+			wxString bgColor;
+			child->GetAttribute("x").ToLong((long*)&x);
+			child->GetAttribute("y").ToLong((long*)&y);
+			child->GetAttribute("width").ToLong((long*)&width);
+			child->GetAttribute("height").ToLong((long*)&height);
+			bgColor = child->GetAttribute("background");
+
+			// Create an empty text control
+			wxRichTextCtrl* emptyTextCtrl = new wxRichTextCtrl((newWindow ? newFrame : this)->notSidePanel, wxID_ANY, "", wxDefaultPosition, wxSize(width, height));
+
+			// Create a new Note
+			Note* newNote = new Note(width, height, 0, x, y, emptyTextCtrl, *wxBLACK, bgColor, (newWindow ? newFrame : this)->notSidePanel, newWindow? newFrame : this);
+			newNote->bcolor.Set(bgColor);
+
+			wxXmlNode* paraNode = child->GetChildren();
+			while (paraNode) {
+				if (paraNode->GetName() == "Paragraph") {
+					wxXmlNode* textNode = paraNode->GetChildren();
+					while (textNode) {
+						if (textNode->GetName() == "Text") {
+							wxString textValue = textNode->GetAttribute("value");
+
+							wxRichTextAttr attr;
+							bool bold = textNode->GetAttribute("bold") == "1";
+							bool italic = textNode->GetAttribute("italic") == "1";
+							bool underline = textNode->GetAttribute("underline") == "1";
+							wxString align = textNode->GetAttribute("align");
+
+							if (textNode->HasAttribute("color"))
+								attr.SetTextColour(wxColour(textNode->GetAttribute("color")));
+
+							if (textNode->HasAttribute("fontSize")) {
+								long fontSize;
+								textNode->GetAttribute("fontSize").ToLong(&fontSize);
+								attr.SetFontSize(fontSize);
+							}
+
+							// Set alignment if provided
+							if (align == "center") {
+								attr.SetAlignment(wxTEXT_ALIGNMENT_CENTER);
+							}
+							else if (align == "right") {
+								attr.SetAlignment(wxTEXT_ALIGNMENT_RIGHT);
+							}
+							else if (align == "left") {
+								attr.SetAlignment(wxTEXT_ALIGNMENT_LEFT);  // Default to left alignment
+							}
+
+							emptyTextCtrl->SetDefaultStyle(attr);
+
+							// Start formatting
+							if (bold) emptyTextCtrl->BeginBold();
+							if (italic) emptyTextCtrl->BeginItalic();
+							if (underline) emptyTextCtrl->BeginUnderline();
+
+							emptyTextCtrl->WriteText(textValue);
+
+							// End formatting
+							if (bold) emptyTextCtrl->EndBold();
+							if (italic) emptyTextCtrl->EndItalic();
+							if (underline) emptyTextCtrl->EndUnderline();
+						}
+						textNode = textNode->GetNext();
+					}
+					emptyTextCtrl->WriteText("\n"); // Ensure newline for each paragraph
+				}
+				paraNode = paraNode->GetNext();
+			}
+
+			newNote->UpdateNote(emptyTextCtrl, bgColor);
+			(newWindow ? newFrame : this)->notes.push_back(newNote);
+		}
+		else if (child->GetName() == "ToDo") {
+			int x, y, width, height;
+			wxString title;
+
+			title = child->GetAttribute("Title");
+			child->GetAttribute("x").ToLong((long*)&x);
+			child->GetAttribute("y").ToLong((long*)&y);
+			child->GetAttribute("width").ToLong((long*)&width);
+			child->GetAttribute("height").ToLong((long*)&height);
+
+			ToDoList* todo = new ToDoList(x, y, width, height, (newWindow ? newFrame : this)->notSidePanel, title, newWindow ? newFrame : this);
+
+			wxXmlNode* tasks = child->GetChildren();
+
+			while (tasks) {
+
+				wxString Description;
+				bool State;
+
+				Description = tasks->GetAttribute("Description");
+				State = atol(tasks->GetAttribute("State"));
+
+				todo->checkListBox->Insert(Description, todo->checkListBox->GetCount());
+				todo->checkListBox->Check(todo->checkListBox->GetCount() - 1, State);
+
+
+				tasks = tasks->GetNext();
+			}
+
+			(newWindow ? newFrame : this)->todolists.push_back(todo);
+		}
+		else if (child->GetName() == "Stroke") {
+			wxColor color;
+			int size;
+
+			color = wxColor(child->GetAttribute("Color"));
+			size = atol(child->GetAttribute("Size"));
+
+			Stroke stroke = Stroke(color, size);
+
+			wxXmlNode* points = child->GetChildren();
+
+			while (points) {
+
+				int x, y;
+
+				x = atol(points->GetAttribute("x"));
+				y = atol(points->GetAttribute("y"));
+
+				stroke.points.push_back(wxPoint(x, y));
+
+				points = points->GetNext();
+			}
+
+			(newWindow ? newFrame : this)->strokes.push_back(stroke);
+		}
+
+
+		child = child->GetNext();
+	}
+
+	(newWindow ? newFrame : this)->Refresh(); // Refresh UI to show loaded notes
+	wxLogStatus("File loaded successfully!");
+}
+
+void MainFrame::OnFileOpen(wxCommandEvent& evt) {
+	wxFileDialog openFileDialog(
+		this, _("Open Notes File"), "", "",
+		"XML files (*.xml)|*.xml|All Files (*.*)|*.*",
+		wxFD_OPEN | wxFD_FILE_MUST_EXIST);
+	if (openFileDialog.ShowModal() == wxID_CANCEL) {
+		wxLogStatus("File open canceled.");
+		return; // User canceled, so exit the function.
+	}
+	wxString filePath = openFileDialog.GetPath();
+	wxLogStatus("Opening file: %s", filePath);
+	LoadFromFile(filePath);
+}
+
+void MainFrame::OnFileExit(wxCommandEvent& evt) {
+	Close(true);
 }

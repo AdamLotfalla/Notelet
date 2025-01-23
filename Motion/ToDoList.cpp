@@ -103,6 +103,7 @@ void ToDoList::BindEventHandlers()
 void ToDoList::AddTaskFromInput()
 {
     wxString description = inputField->GetValue();
+    tasks.push_back(description);
     if (!description.IsEmpty()) {
         checkListBox->Insert(description, checkListBox->GetCount());
         inputField->Clear();

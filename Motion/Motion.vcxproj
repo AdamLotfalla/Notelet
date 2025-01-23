@@ -47,6 +47,7 @@
     <Image Include="ElipseWhiteMode.ico" />
     <Image Include="EraseDarkMode.ico" />
     <Image Include="EraseWhiteMode.ico" />
+    <Image Include="Icon.ico" />
     <Image Include="Lalign.ico" />
     <Image Include="LbrushDarkMode.ico" />
     <Image Include="LbrushWhiteMode.ico" />
