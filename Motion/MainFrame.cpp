@@ -41,6 +41,9 @@ MainFrame::MainFrame(const wxString& title) : wxFrame(nullptr, wxID_ANY, title) 
 	this->SetDoubleBuffered(true);
 	//Bind(wxEVT_KEY_DOWN, &MainFrame::Shortcuts, this);
 
+	TextInput->Newline();
+	TextInput->WriteText("Starting...");
+
 	showBrushes = false;
 	MbrushActive = true;
 	brushSize = 3;
@@ -54,6 +57,8 @@ MainFrame::MainFrame(const wxString& title) : wxFrame(nullptr, wxID_ANY, title) 
 	isDark = !isDark;
 	wxCommandEvent dummyEvent(wxEVT_BUTTON, wxID_ANY);
 	SwitchThemeButton(dummyEvent);
+	TextInput->SelectAll();
+	TextInput->DeleteSelection();
 }
 
 
@@ -1051,17 +1056,15 @@ void MainFrame::OnBoldClick(wxCommandEvent& evt)
 
 		bool flag = TextInput->IsSelectionBold() ? true : false;
 
-		for (long i = TextInput->GetSelectionRange().GetStart(); i < TextInput->GetSelectionRange().GetEnd(); i++) {
+		for (long i = TextInput->GetSelectionRange().GetStart(); i < TextInput->GetSelectionRange().GetEnd(); ++i) {
 			wxRichTextAttr charAttr;
 
 			TextInput->GetStyle(i, charAttr);
 			charAttr.SetFontWeight(flag ? wxFONTWEIGHT_NORMAL : wxFONTWEIGHT_BOLD);
 			TextInput->SetStyle(i, i + 1, charAttr);
+			TextInput->Update();
+			TextInput->Refresh();
 
-			//if (TextInput->GetStyle(i, charAttr)) {
-			//	charAttr.SetFontWeight(flag ? wxFONTWEIGHT_NORMAL : wxFONTWEIGHT_BOLD);
-			//	TextInput->SetStyle(i, i + 1, charAttr);
-			//}
 		}
 		wxLogStatus("Has selection");
 	}
@@ -1429,8 +1432,8 @@ void MainFrame::TextInputShortcuts(wxKeyEvent& evt)
 
 void MainFrame::OnCaretClick(wxMouseEvent& evt)
 {
-	//CallAfter(&MainFrame::UpdateTextInfo);
-	UpdateTextInfo();
+	CallAfter(&MainFrame::UpdateTextInfo);
+	//UpdateTextInfo();
 	evt.Skip();
 }
 
@@ -1474,6 +1477,7 @@ void MainFrame::OnFontSizeSelect(wxCommandEvent& evt)
 	TextInput->SetDefaultStyle(attr);
 	TextInput->SetCaretPosition(cursorPos);
 
+	ForcedChange = true;
 	UpdateTextInfo();
 	evt.Skip();
 }
