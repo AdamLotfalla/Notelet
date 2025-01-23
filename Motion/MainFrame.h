@@ -25,6 +25,7 @@ struct MainFrame : public wxFrame
 	void UpdateColors();
 	void addScrolledPanel();
 	void UpdateBrushes();
+	void ResetFormatting();
 	bool XSbrushActive, SbrushActive, MbrushActive, LbrushActive, XLbrushActive, showBrushes;
 	void addEditPanel(wxWindow* parent);
 
@@ -39,6 +40,7 @@ struct MainFrame : public wxFrame
 	int noteDefaultPositionX;
 	int noteDefaultPositionY;
 	int todoCount = 0;
+	int fontSize;
 
 	bool Bold = false;
 	bool Italic = false;
@@ -48,7 +50,7 @@ struct MainFrame : public wxFrame
 	bool Raligntoggle = false;
 	bool Caligntoggle = false;
 
-	bool newFontSize = false;
+	bool ForcedChange = false;
 
 	int index;
 	int grandChildren;
@@ -89,6 +91,7 @@ struct MainFrame : public wxFrame
 	wxColor ForegroundColor;
 	wxColor BackgroundColor;
 	wxColor ColorBuffer;
+	wxColor InputTextColor;
 
 	queue<wxWindow*> themeQueue1;
 	queue<wxWindow*> themeQueue2;
