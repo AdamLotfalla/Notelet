@@ -47,4 +47,4 @@ Watch the tutorial from [here](https://drive.google.com/file/d/1uL69Prpo4ep723mc
   - **Page Up** to raise above others
   - **Page down** to lower below others
 - You can save, save as, and open files from the files menu
-- The directory of file is not saved automatically, so you don't have to specify the path each time you save your work.
+- The directory of file is now saved automatically, so you don't have to specify the path each time you save your work.
