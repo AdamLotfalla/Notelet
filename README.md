@@ -5,7 +5,8 @@ Notelet is a notetaking app built upon stickynotes. it is my first experience in
 ### Why wxWidgets?
 Because I'm already familiar with c++ and wanted to learn something new without going into a completely different langauage. The framework is a bit limited though, especially on Windows, but it is fine :).
 
-Watch the tutorial from [here](https://drive.google.com/file/d/1uL69Prpo4ep723mcAhQAcTOxGFb6ZK-m/view?usp=drive_link)
+Watch the tutorial from [here](https://cloud-3hwnl7alt-hack-club-bot.vercel.app/02025-01-24_00-26-33__1_.mp4)
+
 
 ## Features in Notelet 2.0
 ### Notes 
