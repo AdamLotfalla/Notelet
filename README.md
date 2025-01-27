@@ -1,4 +1,4 @@
-# Notelet 2.0 | the nonlinear notetaking app
+# Notelet 2.1 | the nonlinear notetaking app
 
 Notelet is a notetaking app built upon stickynotes. it is my first experience in windows app development using wxWidgets in C++.
 
@@ -6,9 +6,9 @@ Notelet is a notetaking app built upon stickynotes. it is my first experience in
 Because I'm already familiar with c++ and wanted to learn something new without going into a completely different langauage. The framework is a bit limited though, especially on Windows, but it is fine :).
 
 ### What makes Notelet different than MS Notes & MS Whiteboard ?
-Although these apps are developed by teams of great developers while I'm alone and still a beginner, the app offers some features that are not there (as far as I'm aware of). Those features include rich text formatting, to-do lists, and the most important thing I'm proud of: the app begin developed by me alone in a short time frame. 
+Although these apps are developed by teams of great developers while I'm alone and still a beginner, the app offers some features that are not there (as far as I'm aware of). Those features include rich text formatting, to-do lists, and the most important thing I'm proud of: the app being developed by me alone in a short time frame. 
 
-Watch the tutorial from [here](https://cloud-3hwnl7alt-hack-club-bot.vercel.app/02025-01-24_00-26-33__1_.mp4)
+Watch the tutorial from [here](https://cloud-qnnkrogi9-hack-club-bot.vercel.app/02025-01-27_15-51-11.mp4)
 
 
 ## Features in Notelet 2.1
