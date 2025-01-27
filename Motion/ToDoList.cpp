@@ -1,8 +1,10 @@
 #include "ToDoList.h"
 #include "MainFrame.h"
+#include "RenameDialog.h"
 #include <wx/wx.h>
 
-ToDoList::ToDoList(int X_POS, int Y_POS, int WIDTH, int HEIGHT, wxPanel* PARENT, wxString TITLE, MainFrame* frame) : rectangle(PARENT, wxPoint(X_POS, Y_POS), wxSize(WIDTH, HEIGHT), 2, *wxBLACK, wxColor("#cfcfcf"), frame)  {
+ToDoList::ToDoList(int X_POS, int Y_POS, int WIDTH, int HEIGHT, wxPanel* PARENT, wxString TITLE, MainFrame* frame) 
+    : rectangle(PARENT, wxPoint(X_POS, Y_POS), wxSize(WIDTH, HEIGHT), 2, *wxBLACK, wxColor("#cfcfcf"), frame)  {
     parent = PARENT;
     x_pos = X_POS;
     y_pos = Y_POS;
@@ -27,6 +29,7 @@ void ToDoList::CreateControls()
 
     headlineText = new wxStaticText(this, wxID_ANY, title, wxPoint(-1, -1), wxSize(-1, -1), wxALIGN_CENTER_HORIZONTAL);
     headlineText->SetFont(headlineFont);
+    headlineText->SetBackgroundColour(this->bcolor);
 
     inputField = new wxTextCtrl(this, wxID_ANY, "", wxDefaultPosition, wxSize(-1, 25), wxTE_PROCESS_ENTER);
     addButton = new wxButton(this, wxID_ANY, "Add", wxDefaultPosition, wxSize(-1, 25));
@@ -97,6 +100,7 @@ void ToDoList::BindEventHandlers()
     clearButton->Bind(wxEVT_BUTTON, &ToDoList::OnClearButtonClicked, this);
     moveUpButton->Bind(wxEVT_BUTTON, &ToDoList::moveUp, this);
     moveDownButton->Bind(wxEVT_BUTTON, &ToDoList::moveDown, this);
+    headlineText->Bind(wxEVT_LEFT_DCLICK, &ToDoList::showRenameDialog, this);
     //this->Bind(wxEVT_CLOSE_WINDOW, &ToDoList::OnWindowClosed, this);
 }
 
@@ -151,7 +155,14 @@ void ToDoList::moveDown(wxCommandEvent& evt)
 {
     MoveSelectedTask(1);
 }
+
 void ToDoList::moveUp(wxCommandEvent& evt)
 {
     MoveSelectedTask(-1);
+}
+
+void ToDoList::showRenameDialog(wxMouseEvent& evt)
+{
+    RenameDialog* dialog = new RenameDialog(parent, this);
+    dialog->ShowModal();
 }

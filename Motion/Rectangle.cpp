@@ -2,10 +2,12 @@
 #include <wx/dcbuffer.h>
 #include <wx/graphics.h>
 #include "MainFrame.h"
+#include "ImageBox.h"
 
 rectangle::rectangle(wxWindow* PARENT, wxPoint STARTPOS, wxSize defaultSize, int THICKNESS, wxColor FCOLOR, wxColor BCOLOR, MainFrame* FRAME) : wxWindow(PARENT, wxID_ANY, STARTPOS) {
 
 	size = THICKNESS;
+    initialSize = defaultSize;
 	startPos = STARTPOS;
 	fcolor = FCOLOR;
     bcolor = BCOLOR;
@@ -105,12 +107,11 @@ void rectangle::OnPanelHover(wxMouseEvent& evt)
 
 void rectangle::OnPanelMotion(wxMouseEvent& evt)
 {
-    if (evt.LeftIsDown() && evt.Dragging()) {
+    if (evt.LeftIsDown() && evt.Dragging() && active) {
         SetCursor(wxCURSOR_CLOSED_HAND);
         auto mPos = wxGetMousePosition();
-        if (mainframe->activeRectangle != nullptr) {
-            mainframe->activeRectangle->SetPosition(mPos - offset);
-        }
+        this->SetPosition(mPos - offset);
+        startPos = mPos - offset;
     }
 }
 
@@ -147,6 +148,7 @@ void rectangle::OnKnobLeftUp(wxMouseEvent& evt)
     sizerKnob->ReleaseMouse();
     sizerKnob->SetPosition(wxPoint(this->GetSize().GetWidth() - 15, this->GetSize().GetHeight() - 15));
     sizerKnob->Show(true);
+    initialSize = wxSize(sizeX, sizeY);
     Refresh();
 }
 
@@ -155,8 +157,8 @@ void rectangle::OnKnobMotion(wxMouseEvent& evt)
     if (evt.LeftIsDown() && evt.Dragging() && active) {
         SetCursor(wxCURSOR_SIZENWSE);
 
-        int sizeX = std::max(initialSize.x + evt.GetPosition().x, 25);
-        int sizeY = std::max(initialSize.y + evt.GetPosition().y, 25);
+        sizeX = std::max(initialSize.x + evt.GetPosition().x, minSize.x);
+        sizeY = std::max(initialSize.y + evt.GetPosition().y, minSize.y);
 
         this->SetSize(wxSize(sizeX, sizeY));
 
@@ -181,6 +183,10 @@ void rectangle::ShortCuts(wxKeyEvent& evt)
         else if (dynamic_cast<ToDoList*>(this)) {
             auto it = std::find(mainframe->todolists.begin(), mainframe->todolists.end(), this);
             mainframe->todolists.erase(it);
+        }
+        else if (dynamic_cast<ImageBox*>(this)) {
+            auto it = std::find(mainframe->images.begin(), mainframe->images.end(), this);
+            mainframe->images.erase(it);
         }
         wxLogStatus("Delete");
         mainframe->activeRectangle = nullptr;

@@ -3,6 +3,7 @@
 #include <wx/tglbtn.h>
 #include <wx/vidmode.h>
 #include <queue>
+#include <deque>
 #include <wx/wrapsizer.h>
 #include <wx/scrolwin.h>
 #include <wx/splitter.h>
@@ -12,6 +13,7 @@
 #include <wx/richtext/richtextctrl.h>
 #include "Stroke.h"
 #include "ToDoList.h"
+#include "ImageBox.h"
 
 
 using namespace std;
@@ -42,6 +44,7 @@ struct MainFrame : public wxFrame
 	bool isDrawingRect = false;
 	bool isBrushActive = false;
 	bool isEraseActive = false;
+	//bool isImageActive = false;
 	int noteDefaultPositionX;
 	int noteDefaultPositionY;
 	int todoCount = 0;
@@ -82,6 +85,7 @@ struct MainFrame : public wxFrame
 	Tool* BrushTool;
 	Tool* EraseTool;
 	Tool* ToDoTool;
+	Tool* ImageTool;
 
 	Tool* XSbrush;
 	Tool* Sbrush;
@@ -91,6 +95,8 @@ struct MainFrame : public wxFrame
 
 	Note* activeNote = nullptr;
 	rectangle* activeRectangle = nullptr;
+	wxCursor brushCursor = wxCursor("./Cursors/brush.cur", wxBITMAP_TYPE_CUR);
+	wxCursor eraseCursor = wxCursor("./Cursors/Eraser.cur", wxBITMAP_TYPE_CUR);
 	bool occupied = false;
 
 	wxColor ForegroundColor;
@@ -177,6 +183,7 @@ struct MainFrame : public wxFrame
 	vector<Stroke> strokes;
 	deque<Note*> notes;
 	deque<ToDoList*> todolists;
+	deque<ImageBox*> images;
 
 	void SwitchThemeButton(wxCommandEvent& evt);
 	void OnSwatchHover(wxMouseEvent& evt);
@@ -207,6 +214,7 @@ struct MainFrame : public wxFrame
 	void Draw(wxPaintEvent& evt);
 	void OnUpdateButtonClick(wxCommandEvent& evt);
 	void Shortcuts(wxKeyEvent& evt);
+	void ActivateImageTool(wxCommandEvent& evt);
 
 	//brushes
 	void XSbrushEvent(wxCommandEvent& evt);
@@ -214,6 +222,8 @@ struct MainFrame : public wxFrame
 	void MbrushEvent(wxCommandEvent& evt);
 	void LbrushEvent(wxCommandEvent& evt);
 	void XLbrushEvent(wxCommandEvent& evt);
+
+	// file
 	void OnFileSaveAs(wxCommandEvent& evt);
 	void OnFileSave(wxCommandEvent& evt);
 	void OnFileExit(wxCommandEvent& evt);

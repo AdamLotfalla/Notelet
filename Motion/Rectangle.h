@@ -12,9 +12,11 @@ struct rectangle : public wxWindow
 	wxPoint bufferPoint;
 	wxPoint offset;
 	wxSize initialSize;
+	wxSize minSize = wxSize(25,25);
 	wxWindow* parent;
 
 	int size;
+	int sizeX, sizeY;
 	wxColor fcolor;
 	wxColor bcolor;
 

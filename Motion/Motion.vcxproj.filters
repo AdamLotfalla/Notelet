@@ -48,6 +48,12 @@
     <ClInclude Include="Stroke.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="RenameDialog.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ImageBox.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="MainFrame.cpp">
@@ -66,6 +72,12 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Rectangle.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="RenameDialog.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ImageBox.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -151,5 +163,25 @@
     <Image Include="Icon.ico">
       <Filter>Resource Files</Filter>
     </Image>
+    <Image Include="KV2_map.jpg">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="internet.png">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="ImageDarkMode.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="ImageWhiteMode.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Cursors\brush.cur">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="Cursors\Eraser.cur">
+      <Filter>Resource Files</Filter>
+    </None>
   </ItemGroup>
 </Project>

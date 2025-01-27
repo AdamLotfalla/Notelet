@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
@@ -22,9 +22,11 @@
     <ClInclude Include="App.h" />
     <ClInclude Include="ColorDialog.h" />
     <ClInclude Include="Cursors.h" />
+    <ClInclude Include="ImageBox.h" />
     <ClInclude Include="MainFrame.h" />
     <ClInclude Include="Note.h" />
     <ClInclude Include="Rectangle.h" />
+    <ClInclude Include="RenameDialog.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="RGB2HSL.h" />
     <ClInclude Include="Stroke.h" />
@@ -34,9 +36,11 @@
   <ItemGroup>
     <ClCompile Include="App.cpp" />
     <ClCompile Include="ColorDialog.cpp" />
+    <ClCompile Include="ImageBox.cpp" />
     <ClCompile Include="MainFrame.cpp" />
     <ClCompile Include="Note.cpp" />
     <ClCompile Include="Rectangle.cpp" />
+    <ClCompile Include="RenameDialog.cpp" />
     <ClCompile Include="ToDoList.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -48,6 +52,10 @@
     <Image Include="EraseDarkMode.ico" />
     <Image Include="EraseWhiteMode.ico" />
     <Image Include="Icon.ico" />
+    <Image Include="ImageDarkMode.ico" />
+    <Image Include="ImageWhiteMode.ico" />
+    <Image Include="internet.png" />
+    <Image Include="KV2_map.jpg" />
     <Image Include="Lalign.ico" />
     <Image Include="LbrushDarkMode.ico" />
     <Image Include="LbrushWhiteMode.ico" />
@@ -67,6 +75,10 @@
     <Image Include="XLbrushWhiteMode.ico" />
     <Image Include="XSbrushDarkMode.ico" />
     <Image Include="XSbrushWhiteMode.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Cursors\brush.cur" />
+    <None Include="Cursors\Eraser.cur" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>17.0</VCProjectVersion>

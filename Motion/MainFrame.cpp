@@ -16,6 +16,11 @@
 #include <wx/app.h>
 #include "ToDoList.h"
 #include <wx/xml/xml.h>
+#include <wx/filename.h>
+#include <wx/image.h>
+#include <wx/mstream.h>
+#include <wx/base64.h>
+#include "ImageBox.h"
 
 using namespace std;
 
@@ -118,6 +123,7 @@ void MainFrame::addMenuBar()
 
 	addMenu->Append(wxID_NEW, "&Add Note\tCtrl+N", "Add a new note");
 	addMenu->Append(5, "&Add To-Do List \tCtrl+T", "Add a new To-Do list");
+	addMenu->Append(6, "&Add an image \tCtrl+I", "Import a new image");
 
 	settingsMenu->Append(55, "Switch Dark/Light", "Switch between dark and light modes");
 
@@ -130,6 +136,7 @@ void MainFrame::addMenuBar()
 	Bind(wxEVT_MENU, &MainFrame::SwitchThemeButton, this, 55);
 	Bind(wxEVT_MENU, &MainFrame::AddNote, this, wxID_NEW);
 	Bind(wxEVT_MENU, &MainFrame::AddToDo, this, 5);
+	Bind(wxEVT_MENU, &MainFrame::ActivateImageTool, this, 6);
 	Bind(wxEVT_MENU, &MainFrame::OnFileSaveAs, this, wxID_SAVEAS);
 	Bind(wxEVT_MENU, &MainFrame::OnFileSave, this, wxID_SAVE);
 	Bind(wxEVT_MENU, &MainFrame::OnFileOpen, this, wxID_OPEN);
@@ -188,14 +195,17 @@ void MainFrame::addEditPanel(wxWindow* parent)
 	boldButton = new wxToggleButton(parent, wxID_ANY, "B", wxDefaultPosition, wxSize(25,25), wxNO_BORDER);
 	boldButton->SetToolTip("Make Bold");
 	boldButton->Bind(wxEVT_TOGGLEBUTTON, &MainFrame::OnBoldClick, this);
+	boldButton->SetFont(boldButton->GetFont().MakeBold());
 
 	italicButton = new wxToggleButton(parent, wxID_ANY, "I", wxDefaultPosition, wxSize(25, 25), wxNO_BORDER);
 	italicButton->SetToolTip("Make Italic");
 	italicButton->Bind(wxEVT_TOGGLEBUTTON, &MainFrame::OnItalicClick, this);
+	italicButton->SetFont(italicButton->GetFont().MakeItalic());
 
 	underlineButton = new wxToggleButton(parent, wxID_ANY, "U", wxDefaultPosition, wxSize(25, 25), wxNO_BORDER);
 	underlineButton->SetToolTip("Make Underlined");
 	underlineButton->Bind(wxEVT_TOGGLEBUTTON, &MainFrame::OnUnderlineClick, this);
+	underlineButton->SetFont(underlineButton->GetFont().MakeUnderlined());
 
 	wxBitmap bitmap;
 	
@@ -427,6 +437,7 @@ void MainFrame::switchTheme()
 	//ElipseTool->ChangeIcon(isDark ? "./ElipseDarkMode.ico" : "./ElipseWhiteMode.ico");
 	BrushTool->ChangeIcon(isDark ? "./BrushDarkMode.ico" : "./BrushWhiteMode.ico");
 	EraseTool->ChangeIcon(isDark ? "./EraseDarkMode.ico" : "./EraseWhiteMode.ico");
+	ImageTool->ChangeIcon(isDark ? "./ImageDarkMode.ico" : "./ImageWhiteMode.ico");
 
 	textColorPreview->SetBackgroundColour(ForegroundColor);
 	TextInput->SetBackgroundColour(*wxWHITE);
@@ -722,6 +733,9 @@ void MainFrame::UpdateColors()
 // tool buttons
 void MainFrame::addToolBar(wxWindow* parent)
 {
+	wxInitAllImageHandlers();
+
+
 	//objects
 	toolBarPanel = new wxPanel(parent, wxID_ANY, wxDefaultPosition, wxSize(-1, 30));
 	notToolBarPanel = new wxPanel(parent);
@@ -744,8 +758,9 @@ void MainFrame::addToolBar(wxWindow* parent)
 	ToDoTool = new Tool(toolBarPanel, "Add a To-Do list \t Ctrl+T", isDark ? "./ToDoDarkMode.ico" : "./ToDoWhiteMode.ico");
 	//RectangleTool = new Tool(toolBarPanel, "Draw a rectangle \t Ctrl+R", isDark ? "./RectangleDarkMode.ico" : "./RectangleWhiteMode.ico");
 	//ElipseTool = new Tool(toolBarPanel, "Draw an Elipse \t Ctrl+E", isDark ? "./ElipseDarkMode.ico" : "./ElipseWhiteMode.ico");
-	BrushTool = new Tool(toolBarPanel, "Draw using the Brush", isDark ? "./BrushDarkMode.ico" : "./BrushWhiteMode.ico");
-	EraseTool = new Tool(toolBarPanel, "Erase strokes", isDark ? "./EraseDarkMode.ico" : "./EraseWhiteMode.ico");
+	BrushTool = new Tool(toolBarPanel, "Draw using the Brush \t Ctrl+B", isDark ? "./BrushDarkMode.ico" : "./BrushWhiteMode.ico");
+	EraseTool = new Tool(toolBarPanel, "Erase strokes \t Ctrl+E", isDark ? "./EraseDarkMode.ico" : "./EraseWhiteMode.ico");
+	ImageTool = new Tool(toolBarPanel, "Add an image \t Ctrl+I", isDark ? "./ImageDarkMode.ico" : "./ImageWhiteMode.ico");
 
 	XSbrush = new Tool(toolBarPanel, "1px brush nib", isDark ? "./XSbrushDarkMode.ico" : "./XSbrushWhiteMode.ico");
 	Sbrush = new Tool(toolBarPanel, "2px brush nib", isDark ? "./SbrushDarkMode.ico" : "./SbrushWhiteMode.ico");
@@ -760,6 +775,7 @@ void MainFrame::addToolBar(wxWindow* parent)
 	//toolSizer->Add(ElipseTool, 0, wxEXPAND);
 	toolSizer->Add(BrushTool, 0, wxEXPAND);
 	toolSizer->Add(EraseTool, 0, wxEXPAND);
+	toolSizer->Add(ImageTool, 0, wxEXPAND);
 	toolSizer->AddStretchSpacer();
 	toolSizer->Add(XSbrush, 0, wxEXPAND);
 	toolSizer->Add(Sbrush, 0, wxEXPAND);
@@ -775,6 +791,8 @@ void MainFrame::addToolBar(wxWindow* parent)
 	//RectangleTool->Bind(wxEVT_TOGGLEBUTTON, &MainFrame::DrawRectangle, this);
 	BrushTool->Bind(wxEVT_TOGGLEBUTTON, &MainFrame::ActivateBrushTool, this);
 	EraseTool->Bind(wxEVT_TOGGLEBUTTON, &MainFrame::ActivateEraseTool, this);
+	ImageTool->Bind(wxEVT_TOGGLEBUTTON, &MainFrame::ActivateImageTool, this);
+	
 
 	XSbrush->Bind(wxEVT_TOGGLEBUTTON, &MainFrame::XSbrushEvent, this);
 	Sbrush->Bind(wxEVT_TOGGLEBUTTON, &MainFrame::SbrushEvent, this);
@@ -856,10 +874,17 @@ void MainFrame::AddToDo(wxCommandEvent& evt)
 void MainFrame::ActivateBrushTool(wxCommandEvent& evt)
 {
 	isBrushActive = !isBrushActive;
+	if (isBrushActive) {
+		SetCursor(brushCursor);
+	}
+	else {
+		SetCursor(wxCURSOR_DEFAULT);
+	}
 	isDrawingRect = false;
 	isEraseActive = false;
+	//isImageActive = false;
 	showBrushes = true;
-
+	
 	UpdateBrushes();
 	UpdateToolInfo();
 }
@@ -867,13 +892,57 @@ void MainFrame::ActivateBrushTool(wxCommandEvent& evt)
 void MainFrame::ActivateEraseTool(wxCommandEvent& evt)
 {
 	isEraseActive = !isEraseActive;
+	if (isEraseActive) {
+		SetCursor(eraseCursor);
+	}
+	else {
+		SetCursor(wxCURSOR_DEFAULT);
+	}
 	isDrawingRect = false;
 	isBrushActive = false;
+	//isImageActive = false;
 	showBrushes = true;
+
 
 	UpdateBrushes();
 	UpdateToolInfo();
+	Refresh();
+}
 
+void MainFrame::ActivateImageTool(wxCommandEvent& evt)
+{
+	//isImageActive = !isImageActive;
+	isDrawingRect = false;
+	isBrushActive = false;
+	isEraseActive = false;
+	showBrushes = false;
+
+	wxFileDialog openFileDialog(
+		this,
+		_("Open Image File"),
+		"",
+		"",
+		"JPEG files (*.jpg;*.jpeg)|*.jpg;*.jpeg|PNG files (*.png)|*.png|All Files (*.*)|*.*",
+		wxFD_OPEN | wxFD_FILE_MUST_EXIST
+	);
+
+	if (openFileDialog.ShowModal() == wxID_CANCEL) {
+		wxLogStatus("File open canceled.");
+		return; // User canceled, so exit the function.
+	}
+	wxString filePath = openFileDialog.GetPath();
+
+
+	int offset = 200;
+
+	noteDefaultPositionX = scrollPanel->GetScrollPos(wxHORIZONTAL) + offset;
+	noteDefaultPositionY = scrollPanel->GetScrollPos(wxVERTICAL) + offset;
+	
+	ImageBox* imagebox = new ImageBox(notSidePanel, wxPoint(noteDefaultPositionX, noteDefaultPositionY), wxSize(-1, 200), wxImage(filePath), this);
+	images.push_back(imagebox);
+
+	UpdateBrushes();
+	UpdateToolInfo();
 }
 
 
@@ -963,6 +1032,7 @@ void MainFrame::OnLeftUp(wxMouseEvent& evt)
 		wxLogStatus("LeftUp");
 		drawnPanel->sizerKnob->SetPosition(wxPoint(drawnPanel->GetSize().GetWidth() - 15, drawnPanel->GetSize().GetHeight() - 15));
 		wxLogStatus("drawn panel (%i,%i)", drawnPanel->GetPosition().x, drawnPanel->GetPosition().y);
+		SetCursor(wxCURSOR_DEFAULT);
 	}
 
 	if (isBrushActive) {
@@ -971,13 +1041,15 @@ void MainFrame::OnLeftUp(wxMouseEvent& evt)
 		}
 
 		int LastStrokeIndex = strokes.size();
+		if (strokes.back().points.size() == 1) {
+			strokes.pop_back();
+		}
 
 		wxLogStatus("Refreshed, number of circles: %i", int(strokes[LastStrokeIndex - 1].points.size()));
 	}
 
 	isDrawingRect = false;
 	notSidePanel->Refresh();
-	SetCursor(wxCURSOR_DEFAULT);
 }
 
 void MainFrame::OnMouseMotion(wxMouseEvent& evt) {
@@ -1668,6 +1740,7 @@ void MainFrame::OnFileSaveAs(wxCommandEvent& evt) {
 	}
 
 	SaveToFile(currentFilePath);
+	this->SetTitle(wxFileName(currentFilePath).GetName());
 
 }
 
@@ -1766,7 +1839,7 @@ void MainFrame::SaveToFile(const wxString& filePath) {
 	for (const auto& todo : todolists) {
 		wxXmlNode* todoNode = new wxXmlNode(wxXML_ELEMENT_NODE, "ToDo");
 
-		todoNode->AddAttribute("Title", todo->title);
+		todoNode->AddAttribute("Title", todo->headlineText->GetLabel());
 
 		todoNode->AddAttribute("x", to_string(todo->GetPosition().x));
 		todoNode->AddAttribute("y", to_string(todo->GetPosition().y));
@@ -1803,11 +1876,39 @@ void MainFrame::SaveToFile(const wxString& filePath) {
 		root->AddChild(strokeNode);
 	}
 
+	for (auto imagebox : images) {
+		wxMemoryOutputStream memStream;
+		(imagebox->image).SaveFile(memStream, wxBITMAP_TYPE_PNG);
+
+		// Convert memory buffer to Base64
+		size_t size = memStream.GetLength();
+		wxMemoryBuffer buffer(size);
+		memStream.CopyTo(buffer.GetData(), size);
+		wxString base64Data = wxBase64Encode((const unsigned char*)buffer.GetData(), size);
+
+		// Create XML structure
+		wxXmlNode* imageNode = new wxXmlNode(wxXML_ELEMENT_NODE, "Bitmap");
+		imageNode->AddAttribute("x", to_string(imagebox->GetPosition().x));
+		imageNode->AddAttribute("y", to_string(imagebox->GetPosition().y));
+		imageNode->AddAttribute("width", to_string(imagebox->GetSize().GetWidth()));
+		imageNode->AddAttribute("height", to_string(imagebox->GetSize().GetHeight()));
+		imageNode->AddAttribute("imageWidth", to_string(imagebox->bitmap.GetSize().GetWidth()));
+		imageNode->AddAttribute("imageHeight", to_string(imagebox->bitmap.GetSize().GetHeight()));
+
+
+		imageNode->AddAttribute("data", base64Data);
+
+		root->AddChild(imageNode);
+	}
+
+
 	if (!xmlDoc.Save(filePath)) {
+		wxLogError("Unable to save the file!");
 		wxLogError("Unable to save the file!");
 	}
 	else {
 		wxLogStatus("File saved successfully!");
+		wxLogMessage("File saved successfully!");
 	}
 }
 
@@ -1972,11 +2073,43 @@ void MainFrame::LoadFromFile(const wxString& filePath) {
 
 			(newWindow ? newFrame : this)->strokes.push_back(stroke);
 		}
+		else if (child->GetName() == "Bitmap") {
+			// Read Base64 string
+			wxString base64Data = child->GetAttribute("data", "");
 
+			// Decode Base64 to memory buffer
+			wxMemoryBuffer buffer = wxBase64Decode(base64Data);
+			wxMemoryInputStream memStream(buffer.GetData(), buffer.GetDataLen());
+
+			// Load the image from memory
+			wxImage image;
+			image.LoadFile(memStream, wxBITMAP_TYPE_PNG);
+
+			int x, y;
+			int width, height;
+			int imageWidht, imageHeight;
+
+			x = atol(child->GetAttribute("x"));
+			y = atol(child->GetAttribute("y"));
+
+			width = atol(child->GetAttribute("width"));
+			height = atol(child->GetAttribute("height"));
+
+			imageWidht = atol(child->GetAttribute("imageWidth"));
+			imageHeight = atol(child->GetAttribute("imageHeight"));
+
+			ImageBox* imagebox = new ImageBox((newWindow ? newFrame : this)->notSidePanel, wxPoint(x, y), wxSize(width, height), image, (newWindow ? newFrame : this));
+			imagebox->bitmap.Rescale(imagebox->bitmap, wxSize(imageWidht, imageHeight));
+			imagebox->display->SetBitmap(imagebox->bitmap);
+			imagebox->SetSize(width, height);
+			imagebox->sizerKnob->SetPosition(wxPoint(imagebox->GetSize().x - 15, imagebox->GetSize().y - 15));
+			(newWindow ? newFrame : this)->images.push_back(imagebox);
+		}
 
 		child = child->GetNext();
 	}
 
+	(newWindow ? newFrame : this)->SetTitle(wxFileName(filePath).GetName());
 	(newWindow ? newFrame : this)->Refresh(); // Refresh UI to show loaded notes
 	wxLogStatus("File loaded successfully!");
 }

@@ -6,7 +6,7 @@
 using namespace std;
 
 ColorDialog::ColorDialog(wxWindow* parent, wxString title, MainFrame* frame)
-    : wxDialog(parent, wxID_ANY, title, wxDefaultPosition, wxSize(300, 250)) {
+    : wxDialog(parent, wxID_ANY, title, wxDefaultPosition, wxSize(-1, 250)) {
 
     mainframe = frame;
     color = "#000000";
@@ -23,7 +23,7 @@ ColorDialog::ColorDialog(wxWindow* parent, wxString title, MainFrame* frame)
     BL = new wxTextCtrl(this, wxID_ANY, "", wxDefaultPosition, wxSize(-1, 25));
     Hex = new wxTextCtrl(this, wxID_ANY, "", wxDefaultPosition, wxSize(-1, 25));
 
-    colorPreview = new wxPanel(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxBORDER_SIMPLE);
+    colorPreview = new wxPanel(this, wxID_ANY, wxDefaultPosition, wxSize(-1,-1), wxBORDER_SIMPLE);
 
     addButton = new wxButton(this, wxID_ANY, "Add",
         wxDefaultPosition, wxSize(-1, 30));

@@ -55,5 +55,6 @@ private:
 	void SwapTasks(int i, int j);
 	void moveDown(wxCommandEvent& evt);
 	void moveUp(wxCommandEvent& evt);
+	void showRenameDialog(wxMouseEvent& evt);
 };
 
