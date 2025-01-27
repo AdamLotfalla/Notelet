@@ -1,30 +1,54 @@
-# Notelet - the nonlinear notetaking app
+# Notelet 2.0 | the nonlinear notetaking app
 
 Notelet is a notetaking app built upon stickynotes. it is my first experience in windows app development using wxWidgets in C++.
 
-The app currently offers only stickynotes with all of their functionalities but I aim to add other features like annotation and images 
+### Why wxWidgets?
+Because I'm already familiar with c++ and wanted to learn something new without going into a completely different langauage. The framework is a bit limited though, especially on Windows, but it is fine :).
 
-## Test the app
-Watch a demo video [here](https://drive.google.com/file/d/1TVw4F6kulGVK57ZKp9LZ-EN0cC3JiGdy/view?usp=drive_link)
-, or download the program for this [drive](https://drive.google.com/drive/folders/1eHFIcFspGgeAo4dQFW-o4aptjiVGgcJl?usp=sharing)
+### What makes Notelet different than MS Notes & MS Whiteboard ?
+Although these apps are developed by teams of great developers while I'm alone and still a beginner, the app offers some features that are not there (as far as I'm aware of). Those features include rich text formatting, to-do lists, and the most important thing I'm proud of: the app begin developed by me alone in a short time frame. 
+
+Watch the tutorial from [here](https://cloud-3hwnl7alt-hack-club-bot.vercel.app/02025-01-24_00-26-33__1_.mp4)
 
 
-https://github.com/user-attachments/assets/534c1b1f-5d58-412c-bccf-e045d98046bd
-
-
-## Basic controls
-- On the left panel, you have the color pane on the top. You can choose what color to change: foreground or background, and then choose the color for that choice. The color chosen will appear beside its corresponding radiobox.
-- On the left panel, you have the add note options on the bottom. First enter your note text in the text box, choose your formatting: **bold**, **italic**, or **Underlined**, then click **add**, **Ctrl + N**, or go to **Add >> New note** menu to create new.
-- If you want to modify the note, click on the desired note, select your modificaitons, enter the new text, and then click *update*.
-- You can drag any note on the work area
-- To put a note on the top, first select the note and then click **Home** key on the keyboard
-- To put a note on the bottom, first select the note and then click **End** key on the keyboard
-- To delete a note, select the desired note, and press **Delete** key on the keyboard
-- On the right panel, you can add tasks to your To-Do list
-- Enter the description of your task in the text box above, click add or press **Enter** key to add the task
-- On the bottom you have controls
-- To rearrange tasks, select the desired task to move and click either arrow on the bottm right
-- To delete the selected task, click "Delete task"
-- To clear the To-Do list, click on the "Clear" button, a dialog box will appear to confirm your command. Click "Yes" to delete all, or "No"/"Cancel" to go back
-- To Save your work, go to **File >> Save As**
-- To open an old workspace, go to **File >> Open** and select your .XML file
+## Features in Notelet 2.0
+### Notes 
+- Now resizable using the knob that apears down-right the note when activated by a click
+- Supports rich text formatting. Enter text on the text panel down left, some shortcuts like:
+    - **Ctrl + B** to make bold
+    - **Ctrl + I** to make italic
+    - **Ctrl + U** to make underlined
+    - **Ctrl + L** to left align
+    - **Ctrl + R** to right align
+    - **Ctrl + E** to center align
+    - **Ctrl + Shift + .** to increase font size
+    - **Ctrl + Shift + ,** to decrease font size
+    - Select any text + any of these shortcuts, and the formatting will be allplied to selection
+- An activated note will show its content on the input box to edit text. Click update to apply your edit (edits include text or background color edit)
+### Infinite number of colors
+- Using the plus Icon on the color panel on the top-left, a dialog box will appear, choose your color format from HSL, RGB, or Hex, and then enter the color value
+- Colors will show either their Hex code or RGB values when hovered on
+### Imporved UI
+- Only one side bar is being shown while other tools are moved to a tool bar at the top
+### Multiple To-Do lists
+- To do lists are now like notes: they can be resized, moved, and made multiple of
+- To add a To-Do list, click of the to-do list button on the tool bar, **Ctrl + T** or go to Add>>To-Do list
+### Dark/Light modes
+- Go to settings >> switch Dark/Light modes
+### Infinite space to work with
+- Not really infinite, but you can Pan using right mouse button on the work space to navigate your notes giving more space to work with
+### Drawing and erasing
+- A brush tool is added to the tool bar, or use **Ctrl + B**
+- An Eraser tool is also added to the tool bar, or use **Ctrl + E**
+- When using either of them, new tools will appear on the right of the tool bar to change brush sizes
+- 5 brushes are available: 1px, 2px, 3px, 5px, 10px all of them can be activated using **Ctrl + (1-5)**
+- A brush takes the Foreground color from the side panel
+- Shortcuts of brush and eraser will work only when the text box is not activated
+- strokes will not overlay other components like notes and to-do lists (a limitation of wxwidgets)
+### Old features are still here
+- You can select either a note or a to-do list and do the following:
+  - **Delete** to delete
+  - **Page Up** to raise above others
+  - **Page down** to lower below others
+- You can save, save as, and open files from the files menu
+- The directory of file is now saved automatically, so you don't have to specify the path each time you save your work.
