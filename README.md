@@ -11,7 +11,7 @@ Although these apps are developed by teams of great developers while I'm alone a
 Watch the tutorial from [here](https://cloud-3hwnl7alt-hack-club-bot.vercel.app/02025-01-24_00-26-33__1_.mp4)
 
 
-## Features in Notelet 2.0
+## Features in Notelet 2.1
 ### Notes 
 - Now resizable using the knob that apears down-right the note when activated by a click
 - Supports rich text formatting. Enter text on the text panel down left, some shortcuts like:
@@ -28,11 +28,14 @@ Watch the tutorial from [here](https://cloud-3hwnl7alt-hack-club-bot.vercel.app/
 ### Infinite number of colors
 - Using the plus Icon on the color panel on the top-left, a dialog box will appear, choose your color format from HSL, RGB, or Hex, and then enter the color value
 - Colors will show either their Hex code or RGB values when hovered on
+### Images
+- Import images from the tool bar or using **Ctrl + I**
 ### Imporved UI
 - Only one side bar is being shown while other tools are moved to a tool bar at the top
 ### Multiple To-Do lists
 - To do lists are now like notes: they can be resized, moved, and made multiple of
 - To add a To-Do list, click of the to-do list button on the tool bar, **Ctrl + T** or go to Add>>To-Do list
+- To rename a To-Do list, double click the title
 ### Dark/Light modes
 - Go to settings >> switch Dark/Light modes
 ### Infinite space to work with
@@ -45,6 +48,7 @@ Watch the tutorial from [here](https://cloud-3hwnl7alt-hack-club-bot.vercel.app/
 - A brush takes the Foreground color from the side panel
 - Shortcuts of brush and eraser will work only when the text box is not activated
 - strokes will not overlay other components like notes and to-do lists (a limitation of wxwidgets)
+- Custom cursors are addded for both tools
 ### Old features are still here
 - You can select either a note or a to-do list and do the following:
   - **Delete** to delete
