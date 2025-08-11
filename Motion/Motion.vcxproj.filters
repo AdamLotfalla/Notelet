@@ -54,6 +54,9 @@
     <ClInclude Include="ImageBox.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="NoteDialog.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="MainFrame.cpp">
@@ -78,6 +81,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="ImageBox.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="NoteDialog.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

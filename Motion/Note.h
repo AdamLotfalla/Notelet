@@ -28,4 +28,5 @@ public:
 
     void UpdateNote(wxRichTextCtrl* newSOURCE, wxColor newBcolor);
     void MakeActiveNote(wxMouseEvent& evt);
+    void ShowEditPanel(wxMouseEvent& evt);
 };

@@ -37,8 +37,7 @@ MainFrame::MainFrame(const wxString& title) : wxFrame(nullptr, wxID_ANY, title) 
 
 	addToolBar(this);
 	addSideBar(notToolBarPanel);
-	addColorPanel(colorPanel);
-	addEditPanel(editPanel);
+	addColorPanel(sidePanel);
 	addMenuBar();
 
 	H2Font.SetPointSize(16);
@@ -48,24 +47,19 @@ MainFrame::MainFrame(const wxString& title) : wxFrame(nullptr, wxID_ANY, title) 
 	this->SetDoubleBuffered(true);
 	this->Bind(wxEVT_KEY_DOWN, &MainFrame::Shortcuts, this);
 
-	TextInput->Newline();
-	TextInput->WriteText("Starting...");
+	
 
 	showBrushes = false;
 	MbrushActive = true;
 	brushSize = 3;
-	fontSize = 9;
 	InputTextColor = wxColor(paletteColors[20]);
 	UpdateBrushes();
-	ResetFormatting();
 	//CreateStatusBar();
-	UpdateTextInfo();
+
 
 	isDark = !isDark;
 	wxCommandEvent dummyEvent(wxEVT_BUTTON, wxID_ANY);
 	SwitchThemeButton(dummyEvent);
-	TextInput->SelectAll();
-	TextInput->DeleteSelection();
 }
 
 
@@ -88,22 +82,6 @@ void MainFrame::addSideBar(wxWindow* parent)
 	
 	parent->SetSizerAndFit(sidePanelsSizer);
 
-	//edit panel
-	editPanelSplitter = new wxSplitterWindow(sidePanel, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxSP_BORDER | wxSP_LIVE_UPDATE);
-
-	colorPanel = new wxPanel(editPanelSplitter);
-	editPanel = new wxPanel(editPanelSplitter);
-
-	editPanelSizer = new wxBoxSizer(wxVERTICAL);
-	editPanelSizer->Add(editPanelSplitter, 1, wxEXPAND);
-
-	colorPanel->SetBackgroundColour(wxColor(200, 200, 100));
-	editPanel->SetBackgroundColour(wxColor(100, 200, 200));
-
-	sidePanel->SetSizerAndFit(editPanelSizer);
-
-	editPanelSplitter->SplitHorizontally(colorPanel, editPanel, -300);
-	editPanelSplitter->SetMinimumPaneSize(170);
 }
 
 void MainFrame::addMenuBar()
@@ -176,124 +154,6 @@ void MainFrame::addScrolledPanel()
 	notSidePanel->Bind(wxEVT_PAINT, &MainFrame::Draw, this);
 }
 
-void MainFrame::addEditPanel(wxWindow* parent)
-{
-	wxBoxSizer* noteEditSizer = new wxBoxSizer(wxVERTICAL);
-	wxBoxSizer* SecondRowButtonSizer = new wxBoxSizer(wxHORIZONTAL);
-	wxBoxSizer* FirstRowButtonSizer = new wxBoxSizer(wxHORIZONTAL);
-	
-	TextInput = new wxRichTextCtrl(parent, wxID_ANY, "");
-
-	//TextInput->SetHint("Enter Note message");
-
-	addButton = new wxButton(parent, wxID_ANY, "+");
-	addButton->SetToolTip("Add a new note \t CTRL+N");
-
-	updateButton = new wxButton(parent, wxID_ANY, "Update");
-	updateButton->SetToolTip("UpdateSelectedNote \t Ctrl+U");
-
-	boldButton = new wxToggleButton(parent, wxID_ANY, "B", wxDefaultPosition, wxSize(25,25), wxNO_BORDER);
-	boldButton->SetToolTip("Make Bold");
-	boldButton->Bind(wxEVT_TOGGLEBUTTON, &MainFrame::OnBoldClick, this);
-	boldButton->SetFont(boldButton->GetFont().MakeBold());
-
-	italicButton = new wxToggleButton(parent, wxID_ANY, "I", wxDefaultPosition, wxSize(25, 25), wxNO_BORDER);
-	italicButton->SetToolTip("Make Italic");
-	italicButton->Bind(wxEVT_TOGGLEBUTTON, &MainFrame::OnItalicClick, this);
-	italicButton->SetFont(italicButton->GetFont().MakeItalic());
-
-	underlineButton = new wxToggleButton(parent, wxID_ANY, "U", wxDefaultPosition, wxSize(25, 25), wxNO_BORDER);
-	underlineButton->SetToolTip("Make Underlined");
-	underlineButton->Bind(wxEVT_TOGGLEBUTTON, &MainFrame::OnUnderlineClick, this);
-	underlineButton->SetFont(underlineButton->GetFont().MakeUnderlined());
-
-	wxBitmap bitmap;
-	
-	wxIcon LalignIcon("./Lalign.ico", wxBITMAP_TYPE_ICO);
-	wxIcon CalignIcon("./Calign.ico", wxBITMAP_TYPE_ICO);
-	wxIcon RalignIcon("./Ralign.ico", wxBITMAP_TYPE_ICO);
-
-	wxArrayString fontSizes = {
-		"6",
-		"8",
-		"10",
-		"11",
-		"12",
-		"14",
-		"16",
-		"20",
-		"24",
-		"30",
-		"32",
-		"36"
-	};
-
-	FontSizeBox = new wxComboBox(parent, wxID_ANY, to_string(fontSize), wxDefaultPosition, wxSize(-1, 25), fontSizes);
-
-	bitmap = wxBitmap(LalignIcon);
-	bitmap.Rescale(bitmap, wxSize(15, 15));
-	LeftAlignButton = new wxBitmapButton(parent, wxID_ANY, bitmap, wxDefaultPosition, wxSize(25, 25), wxALIGN_CENTER | wxNO_BORDER);
-	LeftAlignButton->SetToolTip("Left Align");
-	LeftAlignButton->Bind(wxEVT_BUTTON, &MainFrame::OnLeftAlignClick, this);
-	
-	bitmap = wxBitmap(RalignIcon);
-	bitmap.Rescale(bitmap, wxSize(15, 15));
-	RightAlignButton = new wxBitmapButton(parent, wxID_ANY, bitmap, wxDefaultPosition, wxSize(25, 25), wxALIGN_CENTER | wxNO_BORDER);
-	RightAlignButton->SetToolTip("Right Align");
-	RightAlignButton->Bind(wxEVT_BUTTON, &MainFrame::OnRightAlignClick, this);
-	
-	bitmap = wxBitmap(CalignIcon);
-	bitmap.Rescale(bitmap, wxSize(15, 15));
-	CenterAlignButton = new wxBitmapButton(parent, wxID_ANY, bitmap, wxDefaultPosition, wxSize(25, 25), wxALIGN_CENTER | wxNO_BORDER);
-	CenterAlignButton->SetToolTip("Center Align");
-	CenterAlignButton->Bind(wxEVT_BUTTON, &MainFrame::OnCenterAlignClick, this);
-
-	textColorPreview = new wxPanel(parent, wxID_ANY, wxDefaultPosition, wxSize(-1, 25), wxBORDER_SIMPLE);
-	textColorPreview->SetToolTip("Text color\n the same as the foreground color");
-
-	noteEditSizer->AddSpacer(5);
-	noteEditSizer->Add(FirstRowButtonSizer, 0, wxEXPAND | wxRIGHT | wxLEFT, 5);
-	noteEditSizer->Add(SecondRowButtonSizer, 0, wxEXPAND | wxRIGHT | wxLEFT, 5);
-	noteEditSizer->AddSpacer(5);
-	noteEditSizer->Add(TextInput, 1, wxEXPAND | wxRIGHT | wxLEFT, 5);
-	noteEditSizer->AddSpacer(5);
-	noteEditSizer->Add(addButton, 0, wxEXPAND | wxRIGHT | wxLEFT, 5);
-	noteEditSizer->Add(updateButton, 0, wxEXPAND | wxRIGHT | wxLEFT , 5);
-	noteEditSizer->AddSpacer(5);
-
-
-	FirstRowButtonSizer->Add(FontSizeBox, 1, wxEXPAND);
-
-	SecondRowButtonSizer->Add(textColorPreview, 1, wxEXPAND);
-	SecondRowButtonSizer->AddSpacer(1);
-	SecondRowButtonSizer->Add(LeftAlignButton, 0, wxEXPAND);
-	SecondRowButtonSizer->AddSpacer(1);
-	SecondRowButtonSizer->Add(CenterAlignButton, 0, wxEXPAND);
-	SecondRowButtonSizer->AddSpacer(1);
-	SecondRowButtonSizer->Add(RightAlignButton, 0, wxEXPAND);
-	SecondRowButtonSizer->AddSpacer(1);
-	SecondRowButtonSizer->Add(boldButton, 0, wxEXPAND);
-	SecondRowButtonSizer->AddSpacer(1);
-	SecondRowButtonSizer->Add(italicButton, 0, wxEXPAND);
-	SecondRowButtonSizer->AddSpacer(1);
-	SecondRowButtonSizer->Add(underlineButton, 0, wxEXPAND);
-
-	//TextInput->BeginTextColour(ForegroundColor);
-
-	parent->SetSizerAndFit(noteEditSizer);
-
-	//FontSizeBox->Bind(wxEVT_TEXT, &MainFrame::OnFontSizeSelect, this);!
-	FontSizeBox->Bind(wxEVT_COMBOBOX, &MainFrame::OnFontSizeSelect, this);
-
-	TextInput->SetFocus();
-	TextInput->Bind(wxEVT_KEY_DOWN, &MainFrame::TextInputShortcuts, this);
-	TextInput->Bind(wxEVT_LEFT_DOWN, &MainFrame::OnCaretClick, this);
-	TextInput->Bind(wxEVT_TEXT, &MainFrame::TextInputType, this);
-
-	addButton->Bind(wxEVT_BUTTON, &MainFrame::OnAddButtonClick, this);
-	updateButton->Bind(wxEVT_BUTTON, &MainFrame::OnUpdateButtonClick, this);
-}
-
 
 
 // theme
@@ -323,7 +183,7 @@ void MainFrame::UpdateBrushes()
 	Sbrush->ChangeIcon(isDark ? "./SbrushDarkMode.ico" : "./SbrushWhiteMode.ico");
 	Mbrush->ChangeIcon(isDark ? "./MbrushDarkMode.ico" : "./MbrushWhiteMode.ico");
 	Lbrush->ChangeIcon(isDark ? "./LbrushDarkMode.ico" : "./LbrushWhiteMode.ico");
-	XLbrush->ChangeIcon(isDark ? "./XLbrushDarkMode.ico" : "./XLbrushWhiteMode.ico");
+	XLbrush->ChangeIcon(isDark ? "./XLbrushDarkMode.ico" : "./XLbrushWhiteMode.ico"); 
 
 	XSbrush->Refresh();
 	Sbrush->Refresh();
@@ -339,26 +199,6 @@ void MainFrame::UpdateBrushes()
 
 	toolBarPanel->Refresh();
 	toolBarPanel->Layout();
-}
-
-void MainFrame::ResetFormatting()
-{
-	wxCommandEvent dummyEvent;
-
-	if (Bold) { OnBoldClick(dummyEvent); }
-	if (Italic) { OnItalicClick(dummyEvent); }
-	if (Underline) { OnUnderlineClick(dummyEvent); }
-	if (TextInput->HasSelection()) {
-		TextInput->SetStyle(TextInput->GetSelectionRange(), TextInput->GetBasicStyle());
-	}
-	fontSize = 9;
-	InputTextColor = wxColor(paletteColors[20]);
-	attr.SetFontSize(fontSize);
-	attr.SetTextColour(InputTextColor);
-	TextInput->SetDefaultStyle(attr);
-
-	ForcedChange = true;
-	UpdateTextInfo();
 }
 
 void MainFrame::switchTheme()
@@ -439,11 +279,8 @@ void MainFrame::switchTheme()
 	EraseTool->ChangeIcon(isDark ? "./EraseDarkMode.ico" : "./EraseWhiteMode.ico");
 	ImageTool->ChangeIcon(isDark ? "./ImageDarkMode.ico" : "./ImageWhiteMode.ico");
 
-	textColorPreview->SetBackgroundColour(ForegroundColor);
-	TextInput->SetBackgroundColour(*wxWHITE);
 	UpdateColors();
 
-	UpdateTextInfo();
 	UpdateToolInfo();
 	UpdateBrushes();
 
@@ -464,116 +301,6 @@ void MainFrame::switchTheme()
 //	//noteEnterText->SelectAll();
 //	wxLogStatus("Active ID: %i", activeNote->GetId());
 //}
-
-void MainFrame::UpdateTextInfo()
-{
-	long caretPos = TextInput->GetCaretPosition();
-	wxRichTextAttr style;
-
-	wxLogStatus("%i", ForcedChange);
-
-	if (caretPos > 0 && !ForcedChange) {
-		TextInput->GetStyle(caretPos, style);
-		attr = style;
-		TextInput->SetDefaultStyle(attr);
-
-		switch (style.GetAlignment())
-		{
-		case wxTEXT_ALIGNMENT_LEFT:
-			Laligntoggle = true;
-			Caligntoggle = false;
-			Raligntoggle = false;
-			break;
-		case wxTEXT_ALIGNMENT_CENTER:
-			Laligntoggle = false;
-			Caligntoggle = true;
-			Raligntoggle = false;
-			break;
-		case wxTEXT_ALIGNMENT_RIGHT:
-			Laligntoggle = false;
-			Caligntoggle = false;
-			Raligntoggle = true;
-			break;
-		default:
-			break;
-		}
-
-
-		if (style.GetFontWeight() == wxFONTWEIGHT_BOLD) { Bold = true; }
-		else { Bold = false; }
-
-		if (style.GetFontStyle() == wxFONTSTYLE_ITALIC) { Italic = true; }
-		else { Italic = false; }
-
-		if (style.GetFontUnderlined()) { Underline = true; }
-		else { Underline = false; }
-
-		InputTextColor = style.GetTextColour();
-	}
-
-
-	//TextInput->GetStyle(caretPos, style);
-	//switch (style.GetAlignment())
-	//{
-	//case wxTEXT_ALIGNMENT_LEFT:
-	//	LeftAlignButton->SetBackgroundColour(wxColor(135, 135, 135));
-	//	Laligntoggle = true;
-	//	RightAlignButton->SetBackgroundColour(RightAlignButton->GetParent()->GetBackgroundColour());
-	//	Raligntoggle = false;
-	//	CenterAlignButton->SetBackgroundColour(CenterAlignButton->GetParent()->GetBackgroundColour());
-	//	Caligntoggle = false;
-	//	break;
-	//case wxTEXT_ALIGNMENT_CENTER:
-	//	CenterAlignButton->SetBackgroundColour(wxColor(135, 135, 135));
-	//	Caligntoggle = true;
-	//	LeftAlignButton->SetBackgroundColour(LeftAlignButton->GetParent()->GetBackgroundColour());
-	//	Laligntoggle = false;
-	//	RightAlignButton->SetBackgroundColour(RightAlignButton->GetParent()->GetBackgroundColour());
-	//	Raligntoggle = false;
-	//	break;
-	//case wxTEXT_ALIGNMENT_RIGHT:
-	//	RightAlignButton->SetBackgroundColour(wxColor(135, 135, 135));
-	//	Raligntoggle = true;
-	//	LeftAlignButton->SetBackgroundColour(LeftAlignButton->GetParent()->GetBackgroundColour());
-	//	Laligntoggle = false;
-	//	CenterAlignButton->SetBackgroundColour(CenterAlignButton->GetParent()->GetBackgroundColour());
-	//	Caligntoggle = false;
-	//	break;
-	//default:
-	//	break;
-	//}
-
-	LeftAlignButton->SetBackgroundColour(Laligntoggle ? wxColor(135, 135, 135) : LeftAlignButton->GetParent()->GetBackgroundColour());
-	CenterAlignButton->SetBackgroundColour(Caligntoggle ? wxColor(135, 135, 135) : CenterAlignButton->GetParent()->GetBackgroundColour());
-	RightAlignButton->SetBackgroundColour(Raligntoggle ? wxColor(135, 135, 135) : RightAlignButton->GetParent()->GetBackgroundColour());
-
-	////boldButton->SetBackgroundColour(style.GetFontWeight() == wxFONTWEIGHT_BOLD ? wxColor(135, 135, 135): boldButton->GetParent()->GetBackgroundColour());
-	////italicButton->SetBackgroundColour(style.GetFontStyle() == wxFONTSTYLE_ITALIC ? wxColor(135, 135, 135): italicButton->GetParent()->GetBackgroundColour());
-	////underlineButton->SetBackgroundColour(style.GetFontUnderlined() ? wxColor(135, 135, 135): underlineButton->GetParent()->GetBackgroundColour());
-	
-	boldButton->SetBackgroundColour(Bold ? wxColor(135, 135, 135) : boldButton->GetParent()->GetBackgroundColour());
-	italicButton->SetBackgroundColour(Italic ? wxColor(135, 135, 135) : italicButton->GetParent()->GetBackgroundColour());
-	underlineButton->SetBackgroundColour(Underline ? wxColor(135, 135, 135) : underlineButton->GetParent()->GetBackgroundColour());
-
-	FontSizeBox->SetValue(to_string(fontSize));
-	textColorPreview->SetBackgroundColour(InputTextColor);
-
-	editPanel->Refresh();
-
-	//textColorPreview->Refresh();
-	//boldButton->Refresh();
-	//italicButton->Refresh();
-	//underlineButton->Refresh();
-	//textColorPreview->Refresh();
-	//LeftAlignButton->Refresh();
-	//RightAlignButton->Refresh();
-	//CenterAlignButton->Refresh();
-	//FontSizeBox->Refresh();
-	//FontSizeBox->Update();
-
-	TextInput->SetFocus();
-	ForcedChange = false;
-}
 
 void MainFrame::UpdateToolInfo()
 {
@@ -654,26 +381,25 @@ void MainFrame::OnSwatchSelect(wxMouseEvent& evt)
 	if (ColorTypeRadioBox->GetSelection() == 0) {
 		ForegroundColor = ColorBuffer;
 		FcolorChoice->SetBackgroundColour(ForegroundColor);
-		textColorPreview->SetBackgroundColour(ForegroundColor);
 
-		attr.SetTextColour(ForegroundColor);
-		TextInput->SetDefaultStyle(attr);
+		//attr.SetTextColour(ForegroundColor);
+		//TextInput->SetDefaultStyle(attr);
 
-		if (TextInput->HasSelection()) {
+		//if (TextInput->HasSelection()) {
 
-			auto startCaretPosition = TextInput->GetSelectionRange().GetStart();
-			auto endCaretPosition = TextInput->GetSelectionRange().GetEnd();
+		//	auto startCaretPosition = TextInput->GetSelectionRange().GetStart();
+		//	auto endCaretPosition = TextInput->GetSelectionRange().GetEnd();
 
-			for (long i = startCaretPosition ; i < endCaretPosition; ++i)
-			{
-				wxRichTextAttr charAttr;
-				TextInput->GetStyle(i, charAttr);
-				charAttr.SetTextColour(ForegroundColor); // Change ONLY alignment
-				TextInput->SetStyle(i, i + 1, charAttr); // Apply updated style
-				TextInput->Update();
-				TextInput->Refresh();
-			}
-		}
+		//	for (long i = startCaretPosition ; i < endCaretPosition; ++i)
+		//	{
+		//		wxRichTextAttr charAttr;
+		//		TextInput->GetStyle(i, charAttr);
+		//		charAttr.SetTextColour(ForegroundColor); // Change ONLY alignment
+		//		TextInput->SetStyle(i, i + 1, charAttr); // Apply updated style
+		//		TextInput->Update();
+		//		TextInput->Refresh();
+		//	}
+		//}
 
 	}
 	else {
@@ -709,14 +435,15 @@ void MainFrame::UpdateColors()
 	wxBitmap AddBitmap(AddIcon);
 	AddBitmap.Rescale(AddBitmap, wxSize(15, 15));
 
-	wxBitmapButton* newColorButton = new wxBitmapButton(colorPanel, wxID_ANY, AddBitmap, wxDefaultPosition, wxSize(25, 25), wxNO_BORDER | wxALIGN_CENTER);
+	wxBitmapButton* newColorButton = new wxBitmapButton(sidePanel, wxID_ANY, AddBitmap, wxDefaultPosition, wxSize(25, 25), wxNO_BORDER | wxALIGN_CENTER);
 	newColorButton->SetBackgroundColour("#808080");
 	newColorButton->Bind(wxEVT_BUTTON, &MainFrame::AddNewColor, this);
 	newColorButton->SetMinSize(wxSize(25, 25));
 	colorWrapSizer->Add(newColorButton, 0, wxEXPAND | wxCENTER);
 
 	for (int i = 0; i < paletteColors.size(); i++) {
-		wxPanel* swatch = new wxPanel(colorPanel, wxID_ANY, wxDefaultPosition, wxSize(25, 25), wxColor(paletteColors[i]) == colorPanel->GetBackgroundColour() ? wxBORDER_SIMPLE : wxNO_BORDER);
+		wxPanel* swatch = new wxPanel(sidePanel, wxID_ANY, wxDefaultPosition, wxSize(25, 25), 
+			wxColor(paletteColors[i]) == sidePanel->GetBackgroundColour() ? wxBORDER_SIMPLE : wxNO_BORDER);
 		swatch->SetBackgroundColour(wxColor(paletteColors[i]));
 		swatch->Bind(wxEVT_ENTER_WINDOW, &MainFrame::OnSwatchHover, this);
 		swatch->Bind(wxEVT_LEFT_DOWN, &MainFrame::OnSwatchSelect, this);
@@ -725,7 +452,7 @@ void MainFrame::UpdateColors()
 		paletteSwatches.push_back(swatch);
 	}
 
-	colorPanel->Layout();
+	sidePanel->Layout();
 }
 
 
@@ -812,10 +539,10 @@ void MainFrame::AddNote(wxCommandEvent& evt)
 	noteDefaultPositionX = scrollPanel->GetScrollPos(wxHORIZONTAL) + offset;
 	noteDefaultPositionY = scrollPanel->GetScrollPos(wxVERTICAL) + offset;
 
-	Note* note = new Note(150, 150, 0, noteDefaultPositionX, noteDefaultPositionY, TextInput, ForegroundColor, BackgroundColor, notSidePanel, this);
-	notes.push_back(note);
+	wxRichTextCtrl* EmptyTextInput = new wxRichTextCtrl();
 
-	TextInput->SelectAll();
+	Note* note = new Note(150, 150, 0, noteDefaultPositionX, noteDefaultPositionY, EmptyTextInput, ForegroundColor, BackgroundColor, notSidePanel, this);
+	notes.push_back(note);
 
 	note->Raise();
 
@@ -1129,449 +856,7 @@ void MainFrame::OnMouseMotion(wxMouseEvent& evt) {
 
 
 
-// styling
-void MainFrame::OnBoldClick(wxCommandEvent& evt)
-{
-	Bold = !Bold;
-	attr.SetFontWeight(Bold? wxFONTWEIGHT_BOLD : wxFONTWEIGHT_NORMAL);
-	TextInput->SetDefaultStyle(attr);
 
-	if (TextInput->HasSelection()) {
-
-		bool flag = TextInput->IsSelectionBold() ? true : false;
-
-		for (long i = TextInput->GetSelectionRange().GetStart(); i < TextInput->GetSelectionRange().GetEnd(); ++i) {
-			wxRichTextAttr charAttr;
-
-			TextInput->GetStyle(i, charAttr);
-			charAttr.SetFontWeight(flag ? wxFONTWEIGHT_NORMAL : wxFONTWEIGHT_BOLD);
-			TextInput->SetStyle(i, i + 1, charAttr);
-			TextInput->Update();
-			TextInput->Refresh();
-
-		}
-		wxLogStatus("Has selection");
-	}
-
-	//CallAfter(&MainFrame::UpdateTextInfo);
-	ForcedChange = true;
-	UpdateTextInfo();
-	evt.Skip();
-}
-
-void MainFrame::OnItalicClick(wxCommandEvent& evt)
-{
-	Italic = !Italic;
-	italicButton->SetBackgroundColour(Italic ? wxColor(135, 135, 135) : italicButton->GetParent()->GetBackgroundColour());
-
-	attr.SetFontStyle(Italic ? wxFONTSTYLE_ITALIC : wxFONTSTYLE_NORMAL);
-	TextInput->SetDefaultStyle(attr);
-
-	if (TextInput->HasSelection()) {
-
-		bool flag = TextInput->IsSelectionItalics() ? true : false;
-
-		for (long i = TextInput->GetSelectionRange().GetStart(); i < TextInput->GetSelectionRange().GetEnd(); i++) {
-			wxRichTextAttr charAttr;
-
-			if (TextInput->GetStyle(i, charAttr)) {
-				charAttr.SetFontStyle(flag ? wxFONTSTYLE_NORMAL : wxFONTSTYLE_ITALIC);
-				TextInput->SetStyle(i, i + 1, charAttr);
-			}
-		}
-	}
-
-	TextInput->SetFocus();
-	italicButton->Refresh();
-
-	ForcedChange = true;
-	UpdateTextInfo();
-	evt.Skip();
-}
-
-void MainFrame::OnUnderlineClick(wxCommandEvent& evt)
-{
-	if (TextInput->HasSelection()) {
-
-		bool flag = TextInput->IsSelectionUnderlined() ? true : false;
-
-		for (long i = TextInput->GetSelectionRange().GetStart(); i < TextInput->GetSelectionRange().GetEnd(); i++) {
-			wxRichTextAttr charAttr;
-
-			if (TextInput->GetStyle(i, charAttr)) {
-				charAttr.SetFontUnderlined(!flag);
-				TextInput->SetStyle(i, i + 1, charAttr);
-			}
-		}
-	}
-
-	Underline = !Underline;
-
-	underlineButton->SetBackgroundColour(Underline ? wxColor(135, 135, 135) : underlineButton->GetParent()->GetBackgroundColour());
-
-	attr.SetFontUnderlined(Underline);
-	TextInput->SetDefaultStyle(attr);
-
-	TextInput->SetFocus();
-	underlineButton->Refresh();
-
-	ForcedChange = true;
-	UpdateTextInfo();
-	evt.Skip();
-}
-
-void MainFrame::OnLeftAlignClick(wxCommandEvent& evt)
-{
-	RightAlignButton->SetBackgroundColour(RightAlignButton->GetParent()->GetBackgroundColour());
-	Raligntoggle = false;
-	CenterAlignButton->SetBackgroundColour(CenterAlignButton->GetParent()->GetBackgroundColour());
-	Caligntoggle = false;
-
-
-	if (!Laligntoggle) {
-		Laligntoggle = true;
-		LeftAlignButton->SetBackgroundColour(wxColor(135, 135, 135));
-
-		attr.SetAlignment(wxTEXT_ALIGNMENT_LEFT);
-		TextInput->SetDefaultStyle(attr);
-		auto lastCaretPosition = TextInput->GetCaretPosition();
-		TextInput->MoveToParagraphStart();
-		auto startCaretPosition = TextInput->GetCaretPosition();
-		TextInput->MoveToParagraphEnd();
-		TextInput->WriteText(" ");
-		auto endCaretPosition = TextInput->GetCaretPosition();
-
-
-		for (long i = startCaretPosition + 1; i <= endCaretPosition; ++i)
-		{
-			wxRichTextAttr charAttr;
-			if (TextInput->GetStyle(i, charAttr)) { // Get each character's style
-				charAttr.SetAlignment(wxTEXT_ALIGNMENT_LEFT); // Change ONLY alignment
-				TextInput->SetStyle(i, i + 1, charAttr); // Apply updated style
-			}
-		}
-
-		TextInput->SetSelection(endCaretPosition, endCaretPosition + 1);
-		TextInput->DeleteSelection();
-
-		TextInput->SetCaretPosition(lastCaretPosition);
-	}
-
-	//boldButton->SetBackgroundColour(attr.GetFontWeight() == wxFONTWEIGHT_BOLD? wxColor(135, 135, 135) : boldButton->GetParent()->GetBackgroundColour());
-	//italicButton->SetBackgroundColour(attr.GetFontStyle() == wxFONTSTYLE_ITALIC? wxColor(135, 135, 135) : italicButton->GetParent()->GetBackgroundColour());
-	//boldButton->SetBackgroundColour(attr.HasFontUnderlined() ? wxColor(135, 135, 135) : underlineButton->GetParent()->GetBackgroundColour());
-	//boldButton->Refresh();
-	//italicButton->Refresh();
-	//underlineButton->Refresh();
-
-	TextInput->SetFocus();
-	TextInput->Refresh();
-	TextInput->Update();
-
-	ForcedChange = true;
-	CallAfter(&MainFrame::UpdateTextInfo);
-}
-
-void MainFrame::OnCenterAlignClick(wxCommandEvent& evt)
-{
-	LeftAlignButton->SetBackgroundColour(LeftAlignButton->GetParent()->GetBackgroundColour());
-	Laligntoggle = false;
-	RightAlignButton->SetBackgroundColour(RightAlignButton->GetParent()->GetBackgroundColour());
-	Raligntoggle = false;
-
-	if (!Caligntoggle) {
-		Caligntoggle = true;
-		CenterAlignButton->SetBackgroundColour(wxColor(135, 135, 135));
-
-		attr.SetAlignment(wxTEXT_ALIGNMENT_CENTER);
-		TextInput->SetDefaultStyle(attr);
-		auto lastCaretPosition = TextInput->GetCaretPosition();
-		TextInput->MoveToParagraphStart();
-		auto startCaretPosition = TextInput->GetCaretPosition();
-		TextInput->MoveToParagraphEnd();
-		TextInput->WriteText(" ");
-		auto endCaretPosition = TextInput->GetCaretPosition();
-
-		for (long i = startCaretPosition + 1; i <= endCaretPosition; ++i)
-		{
-			wxRichTextAttr charAttr;
-			if (TextInput->GetStyle(i, charAttr)) { // Get each character's style
-				charAttr.SetAlignment(wxTEXT_ALIGNMENT_CENTER); // Change ONLY alignment
-				TextInput->SetStyle(i, i + 1, charAttr); // Apply updated style
-			}
-		}
-
-		TextInput->SetSelection(endCaretPosition, endCaretPosition + 1);
-		TextInput->DeleteSelection();
-
-		TextInput->SetCaretPosition(lastCaretPosition);
-	}
-
-	//boldButton->SetBackgroundColour(attr.GetFontWeight() == wxFONTWEIGHT_BOLD ? wxColor(135, 135, 135) : boldButton->GetParent()->GetBackgroundColour());
-	//italicButton->SetBackgroundColour(attr.GetFontStyle() == wxFONTSTYLE_ITALIC ? wxColor(135, 135, 135) : italicButton->GetParent()->GetBackgroundColour());
-	//boldButton->SetBackgroundColour(attr.HasFontUnderlined() ? wxColor(135, 135, 135) : underlineButton->GetParent()->GetBackgroundColour());
-
-	//boldButton->Refresh();
-	//italicButton->Refresh();
-	//underlineButton->Refresh();
-
-	TextInput->SetFocus();
-	TextInput->Refresh();
-	TextInput->Update();
-
-	ForcedChange = true;
-	CallAfter(&MainFrame::UpdateTextInfo);
-}
-
-void MainFrame::OnRightAlignClick(wxCommandEvent& evt)
-{
-	LeftAlignButton->SetBackgroundColour(LeftAlignButton->GetParent()->GetBackgroundColour());
-	Laligntoggle = false;
-	CenterAlignButton->SetBackgroundColour(CenterAlignButton->GetParent()->GetBackgroundColour());
-	Caligntoggle = false;
-
-	if (!Raligntoggle) {
-		Raligntoggle = true;
-		RightAlignButton->SetBackgroundColour(wxColor(135, 135, 135));
-		
-		attr.SetAlignment(wxTEXT_ALIGNMENT_RIGHT);
-		TextInput->SetDefaultStyle(attr);
-		auto lastCaretPosition = TextInput->GetCaretPosition();
-		TextInput->MoveToParagraphStart();
-		auto startCaretPosition = TextInput->GetCaretPosition();
-		TextInput->MoveToParagraphEnd();
-		TextInput->WriteText(" ");
-		auto endCaretPosition = TextInput->GetCaretPosition();
-
-		for (long i = startCaretPosition + 1; i <= endCaretPosition; ++i)
-		{
-			wxRichTextAttr charAttr;
-			if (TextInput->GetStyle(i, charAttr)) { // Get each character's style
-				charAttr.SetAlignment(wxTEXT_ALIGNMENT_RIGHT); // Change ONLY alignment
-				TextInput->SetStyle(i, i + 1, charAttr); // Apply updated style
-			}
-		}
-
-		TextInput->SetSelection(endCaretPosition, endCaretPosition + 1);
-		TextInput->DeleteSelection();
-
-		TextInput->SetCaretPosition(lastCaretPosition);
-	}
-
-	//boldButton->SetBackgroundColour(attr.GetFontWeight() == wxFONTWEIGHT_BOLD ? wxColor(135, 135, 135) : boldButton->GetParent()->GetBackgroundColour());
-	//italicButton->SetBackgroundColour(attr.GetFontStyle() == wxFONTSTYLE_ITALIC ? wxColor(135, 135, 135) : italicButton->GetParent()->GetBackgroundColour());
-	//boldButton->SetBackgroundColour(attr.HasFontUnderlined() ? wxColor(135, 135, 135) : underlineButton->GetParent()->GetBackgroundColour());
-	//boldButton->Refresh();
-	//italicButton->Refresh();
-	//underlineButton->Refresh();
-
-	TextInput->SetFocus();
-	TextInput->Refresh();
-	TextInput->Update();
-
-	ForcedChange = true;
-	CallAfter(&MainFrame::UpdateTextInfo);
-}
-
-
-
-// text input
-void MainFrame::TextInputShortcuts(wxKeyEvent& evt)
-{
-
-	//if (evt.GetKeyCode() == WXK_BACK || evt.GetKeyCode() == WXK_DELETE) {
-	//	wxRichTextAttr defaultAttr = TextInput->GetBasicStyle();  // Store default style
-	//	CallAfter([this, defaultAttr]() {
-	//		long caretPos = TextInput->GetCaretPosition();
-	//		if (caretPos > 0) {
-	//			TextInput->SetStyle(caretPos, caretPos + 1, defaultAttr);  // Reset style at caret
-	//		}
-	//		TextInput->SetDefaultStyle(defaultAttr);  // Ensure new text follows default style
-	//		});
-	//}
-
-	if (evt.ControlDown()) {
-
-		wxCommandEvent dummyEvent;
-
-		switch (evt.GetKeyCode())
-		{
-		case 'B':
-			OnBoldClick(dummyEvent);
-			break;
-		case 'I':
-			OnItalicClick(dummyEvent);
-			break;
-		case 'U':
-			OnUnderlineClick(dummyEvent);
-			break;
-		case WXK_SPACE:
-			ResetFormatting();
-			break;
-		case 'L':
-			OnLeftAlignClick(dummyEvent);
-			break;
-		case 'R':
-			OnRightAlignClick(dummyEvent);
-			break;
-		case 'E':
-			OnCenterAlignClick(dummyEvent);
-			break;
-		default:
-			break;
-		}
-
-
-		TextInput->SetDefaultStyle(attr);
-	}
-
-	if (evt.ControlDown() && evt.ShiftDown()) {
-		switch (evt.GetKeyCode())
-		{
-		case '.':
-			if (TextInput->HasSelection()) {
-
-				auto startCaretPosition = TextInput->GetSelectionRange().GetStart();
-				auto endCaretPosition = TextInput->GetSelectionRange().GetEnd();
-
-				for (long i = startCaretPosition; i < endCaretPosition; ++i)
-				{
-					wxRichTextAttr charAttr;
-					if (TextInput->GetStyle(i, charAttr)) { // Get each character's style
-						int newFontSize = charAttr.GetFontSize() + 1;
-						charAttr.SetFontSize(newFontSize);
-						TextInput->SetStyle(i, i + 1, charAttr); // Apply updated style
-					}
-				}
-			}
-			attr.SetFontSize(attr.GetFontSize() + 1);
-			fontSize++;
-			//FontSizeBox->SetValue(to_string(attr.GetFontSize()));
-			TextInput->SetDefaultStyle(attr);
-			UpdateTextInfo();
-			break;
-		case ',':
-			if (TextInput->HasSelection()) {
-
-				auto startCaretPosition = TextInput->GetSelectionRange().GetStart();
-				auto endCaretPosition = TextInput->GetSelectionRange().GetEnd();
-
-
-				for (long i = startCaretPosition; i < endCaretPosition; ++i)
-				{
-					wxRichTextAttr charAttr;
-					if (TextInput->GetStyle(i, charAttr)) { // Get each character's style
-
-						int newFontSize = charAttr. GetFontSize();
-						if (newFontSize > 1) {
-							newFontSize -= 1;
-							charAttr.SetFontSize(newFontSize);
-						}
-
-						TextInput->SetStyle(i, i + 1, charAttr); // Apply updated style
-					}
-				}
-
-			}
-
-
-			if (attr.GetFontSize() > 1) {
-				attr.SetFontSize(attr.GetFontSize() - 1);
-				fontSize--;
-			}
-			//FontSizeBox->SetValue(to_string(attr.GetFontSize()));
-			TextInput->SetDefaultStyle(attr);
-			UpdateTextInfo();
-			break;
-		default:
-			break;
-		}
-	}
-
-	if (!evt.ControlDown() && !evt.ShiftDown()) {
-		switch (evt.GetKeyCode()) {
-			case WXK_LEFT:
-				if (TextInput->HasSelection()) TextInput->SetCaretPosition(TextInput->GetSelectionRange().GetStart());
-				CallAfter(&MainFrame::UpdateTextInfo);
-				break;
-			case WXK_RIGHT:
-				if (TextInput->HasSelection()) TextInput->SetCaretPosition(TextInput->GetSelectionRange().GetEnd() - 2);
-				CallAfter(&MainFrame::UpdateTextInfo);
-				break;
-			//case WXK_UP:
-			//	CallAfter(&MainFrame::UpdateTextInfo);
-			//	break;
-			//case WXK_DOWN:
-			//	CallAfter(&MainFrame::UpdateTextInfo);
-			//	break;
-			default:
-				break;
-		}
-	}
-
-	if(TextInput->HasSelection()) wxLogStatus("Selection: (%i, %i)", TextInput->GetSelectionRange().GetStart(), TextInput->GetSelectionRange().GetEnd());
-
-	evt.Skip();
-}
-
-void MainFrame::OnCaretClick(wxMouseEvent& evt)
-{
-	CallAfter(&MainFrame::UpdateTextInfo);
-	//UpdateTextInfo();
-	evt.Skip();
-}
-
-void MainFrame::TextInputType(wxCommandEvent& evt)
-{
-	CallAfter(&MainFrame::UpdateTextInfo);
-	evt.Skip();
-}
-
-void MainFrame::OnFontSizeSelect(wxCommandEvent& evt)
-{
-	auto cursorPos = TextInput->GetCaretPosition();
-	//wxRichTextAttr style;
-	//TextInput->GetStyle(cursorPos, style);
-	//style.SetFontSize(atol(FontSizeBox->GetValue()));
-	//TextInput->SetStyle(cursorPos, cursorPos , style);
-
-	fontSize = atol(FontSizeBox->GetValue());
-
-	//newFontSize = true;
-	wxLogStatus("New Font Size triggered!");
-
-	if (TextInput->HasSelection()) {
-
-		auto startCaretPosition = TextInput->GetSelectionRange().GetStart();
-		auto endCaretPosition = TextInput->GetSelectionRange().GetEnd();
-
-		for (long i = startCaretPosition; i <= endCaretPosition; ++i)
-		{
-			wxRichTextAttr charAttr;
-			if (TextInput->GetStyle(i, charAttr)) { // Get each character's style
-				charAttr.SetFontSize(atol(FontSizeBox->GetValue()));
-				TextInput->SetStyle(i, i + 1, charAttr); // Apply updated style
-			}
-		}
-	}
-	//attr.SetFontSize(attr.GetFontSize() + 1);
-	//FontSizeBox->SetValue(to_string(attr.GetFontSize()));
-
-	attr.SetFontSize(fontSize);
-	TextInput->SetDefaultStyle(attr);
-	TextInput->SetCaretPosition(cursorPos);
-
-	ForcedChange = true;
-	UpdateTextInfo();
-	evt.Skip();
-}
-
-void MainFrame::OnAddButtonClick(wxCommandEvent& evt)
-{
-	wxCommandEvent dummyEvent;
-
-	AddNote(dummyEvent);
-}
 
 
 
@@ -1605,15 +890,6 @@ void MainFrame::Draw(wxPaintEvent& evt) {
 	}
 
 	delete gc;
-}
-
-void MainFrame::OnUpdateButtonClick(wxCommandEvent& evt)
-{
-	//wxLogStatus("On Update triggered");
-	if (activeNote != nullptr) {
-		activeNote->UpdateNote(TextInput, BackgroundColor);
-	}
-
 }
 
 void MainFrame::Shortcuts(wxKeyEvent& evt)

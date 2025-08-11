@@ -10,7 +10,6 @@
 #include "Note.h"
 #include "Tool.h"
 #include "Rectangle.h"
-#include <wx/richtext/richtextctrl.h>
 #include "Stroke.h"
 #include "ToDoList.h"
 #include "ImageBox.h"
@@ -30,14 +29,12 @@ struct MainFrame : public wxFrame
 	void UpdateBrushes();
 	void ResetFormatting();
 	bool XSbrushActive = false, SbrushActive = false, MbrushActive = false, LbrushActive = false, XLbrushActive = false, showBrushes = false;
-	void addEditPanel(wxWindow* parent);
 	void SaveToFile(const wxString& filePath);
 	void SaveToDoListsToFile(const wxString& filePaht);
 	void LoadFromFile(const wxString& filePath);
 	void LoadToDoListsToFile(const wxString& filePath);
 
 	//void SetActive(Note* ACTIVENOTE);
-	void UpdateTextInfo();
 	void UpdateToolInfo();
 
 	bool isDark;
@@ -49,16 +46,6 @@ struct MainFrame : public wxFrame
 	int noteDefaultPositionY;
 	int todoCount = 0;
 	int fontSize;
-
-	bool Bold = false;
-	bool Italic = false;
-	bool Underline = false;
-
-	bool Laligntoggle = true;
-	bool Raligntoggle = false;
-	bool Caligntoggle = false;
-
-	bool ForcedChange = false;
 
 	int index;
 	int grandChildren;
@@ -102,7 +89,7 @@ struct MainFrame : public wxFrame
 	wxColor ForegroundColor;
 	wxColor BackgroundColor;
 	wxColor ColorBuffer;
-	wxColor InputTextColor;
+
 
 	queue<wxWindow*> themeQueue1;
 	queue<wxWindow*> themeQueue2;
@@ -119,32 +106,14 @@ struct MainFrame : public wxFrame
 	wxPanel* BcolorChoice;
 	wxPanel* notSidePanel;
 	wxPanel* editPanel;
-	wxPanel* noteEditPanel;
-	wxPanel* textColorPreview;
 	wxPanel* sidePanel;
 	wxScrolledWindow* scrollPanel;
 
-	wxTextCtrl* textInput;
-	wxButton* addButton;
-	wxButton* updateButton;
-	wxToggleButton* boldButton;
-	wxToggleButton* italicButton;
-	wxToggleButton* underlineButton;
-	wxToggleButton* ToDoTab;
-	wxToggleButton* NoteEditTab;
-	wxBitmapButton* LeftAlignButton;
-	wxBitmapButton* RightAlignButton;
-	wxBitmapButton* CenterAlignButton;
-
-	wxRichTextCtrl* TextInput;
-
-	wxComboBox* FontSizeBox;
-
 	wxFont H2Font;
 
-	wxRichTextAttr attr;
-
 	wxRadioBox* ColorTypeRadioBox;
+	wxColor InputTextColor;
+
 
 	wxString currentFilePath;
 
@@ -200,19 +169,9 @@ struct MainFrame : public wxFrame
 
 	void OnLeftDown(wxMouseEvent& evt);
 	void OnLeftUp(wxMouseEvent& evt);
-	void OnBoldClick(wxCommandEvent& evt);
-	void OnItalicClick(wxCommandEvent& evt);
-	void OnUnderlineClick(wxCommandEvent& evt);
-	void OnLeftAlignClick(wxCommandEvent& evt);
-	void OnCenterAlignClick(wxCommandEvent& evt);
-	void OnRightAlignClick(wxCommandEvent& evt);
-	void TextInputShortcuts(wxKeyEvent& evt);
-	void OnCaretClick(wxMouseEvent& evt);
-	void TextInputType(wxCommandEvent& evt);
 	void OnFontSizeSelect(wxCommandEvent& evt);
-	void OnAddButtonClick(wxCommandEvent& evt);
 	void Draw(wxPaintEvent& evt);
-	void OnUpdateButtonClick(wxCommandEvent& evt);
+
 	void Shortcuts(wxKeyEvent& evt);
 	void ActivateImageTool(wxCommandEvent& evt);
 
